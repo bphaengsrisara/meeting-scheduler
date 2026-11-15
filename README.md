@@ -13,11 +13,11 @@ TypeScript.
 
 ## Layout
 
-| Path | What |
-| --- | --- |
-| `web/` | Frontend: Next.js (App Router), TypeScript |
-| `api/` | Backend: Express 5, TypeScript, run directly by Node.js |
-| `docs/` | Requirements |
+| Path    | What                                                    |
+| ------- | ------------------------------------------------------- |
+| `web/`  | Frontend: Next.js (App Router), TypeScript              |
+| `api/`  | Backend: Express 5, TypeScript, run directly by Node.js |
+| `docs/` | Requirements                                            |
 
 The two apps share one pnpm workspace. The database will be PostgreSQL.
 
@@ -30,3 +30,18 @@ pnpm install
 pnpm --filter web dev   # http://localhost:3000
 pnpm --filter api dev   # http://localhost:3001
 ```
+
+## Check the code
+
+Run from the repository root:
+
+```bash
+pnpm lint        # Prettier check, then ESLint in web
+pnpm lint:fix    # ESLint --fix in web, then Prettier rewrite (last, so lint passes)
+pnpm typecheck   # TypeScript check in api
+```
+
+Prettier has one config for both apps, `.prettierrc.json` at the root. A
+formatting problem makes `pnpm lint` fail; `pnpm lint:fix` fixes it. Each
+root script names the apps it runs in, so an app that is missing the script
+makes the command fail instead of being skipped.

@@ -1,5 +1,14 @@
 {
   "name": "meeting-scheduler",
   "private": true,
-  "packageManager": "pnpm@12.18.0"
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "lint": "prettier --check . --ignore-path .gitignore --ignore-path .git/info/exclude --ignore-path .prettierignore && pnpm --filter web lint",
+    "lint:fix": "pnpm --filter web lint:fix && prettier --write . --ignore-path .gitignore --ignore-path .git/info/exclude --ignore-path .prettierignore",
+    "typecheck": "pnpm --filter api typecheck"
+  },
+  "devDependencies": {
+    "prettier": "^3.10.1",
+    "prettier-plugin-tailwindcss": "^0.8.1"
+  }
 }
