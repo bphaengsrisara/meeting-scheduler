@@ -5,8 +5,9 @@
   "scripts": {
     "lint": "prettier --check . --ignore-path .gitignore --ignore-path .git/info/exclude --ignore-path .prettierignore && pnpm --filter api lint && pnpm --filter web lint",
     "lint:fix": "pnpm --filter api lint:fix && pnpm --filter web lint:fix && prettier --write . --ignore-path .gitignore --ignore-path .git/info/exclude --ignore-path .prettierignore",
-    "typecheck": "pnpm --filter api typecheck",
-    "test": "pnpm --filter api test"
+    "typecheck": "pnpm --filter api typecheck && pnpm --filter web typecheck",
+    "test": "pnpm --filter api test && pnpm --filter web test",
+    "test:e2e": "pnpm --filter web test:e2e"
   },
   "devDependencies": {
     "prettier": "^3.10.1",

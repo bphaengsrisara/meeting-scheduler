@@ -6,3 +6,7 @@ web/.next/
 web/out/
 web/build/
 web/next-env.d.ts
+
+# Playwright output (also listed in web/.gitignore)
+web/test-results/
+web/playwright-report/
