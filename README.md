@@ -69,7 +69,7 @@ them, `pnpm --filter api db:generate` writes a new SQL migration into
 | `src/index.ts`      | Starts the server                                                           |
 | `src/app.ts`        | Builds the Express app (used by the tests as well)                          |
 | `src/env.ts`        | Checks the environment variables with Zod                                   |
-| `src/lib/logger.ts` | Logger (pino); logs every request                                           |
+| `src/lib/logger.ts` | Logger (pino); logs every request, with the API secret and cookies redacted |
 | `src/middleware/`   | API secret check, rate limit, 404 and error handlers (one JSON error shape) |
 | `src/auth/`         | Better Auth setup (`/api/auth/*`) and Argon2id password hashing             |
 | `src/db/client.ts`  | Connection pool (pg) and the Drizzle client                                 |
