@@ -3,7 +3,9 @@
 A small web app for scheduling candidate interview meetings: create, list,
 edit and delete meetings.
 
-The requirements are in [docs/requirements.md](docs/requirements.md).
+The requirements are in [docs/requirements.md](docs/requirements.md). The
+design (desktop and mobile screens, components and the screen flow) is in
+[Figma](https://www.figma.com/design/ekxNHHuT2jLA3T7qVPf9Vo), view only.
 
 ## Status
 
