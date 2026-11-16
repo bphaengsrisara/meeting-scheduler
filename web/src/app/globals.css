@@ -127,4 +127,9 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind 4 gives buttons the default arrow; show the hand, like links. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
