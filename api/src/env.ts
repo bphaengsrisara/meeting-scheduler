@@ -8,14 +8,20 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 });
 
-const result = envSchema.safeParse(process.env);
+// Throws with every invalid variable listed, so the API stops at startup.
+export function parseEnv(source: Record<string, string | undefined>) {
+  const result = envSchema.safeParse(source);
 
-if (!result.success) {
-  throw new Error(
-    `Invalid environment variables:\n${z.prettifyError(result.error)}`,
-  );
+  if (!result.success) {
+    throw new Error(
+      `Invalid environment variables:\n${z.prettifyError(result.error)}`,
+    );
+  }
+
+  return result.data;
 }
 
-export const env = result.data;
+export const env = parseEnv(process.env);
