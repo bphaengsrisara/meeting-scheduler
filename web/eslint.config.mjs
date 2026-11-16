@@ -10,6 +10,13 @@ const eslintConfig = defineConfig([
   ...nextTs,
   tseslint.configs.strict,
   sonarjs.configs.recommended,
+  {
+    languageOptions: {
+      // This folder, so an editor that loads both apps' configs at once
+      // does not have to guess which TypeScript project a file belongs to.
+      parserOptions: { tsconfigRootDir: import.meta.dirname },
+    },
+  },
   // Last, so it can turn off rules that clash with Prettier.
   prettier,
   // Override default ignores of eslint-config-next.

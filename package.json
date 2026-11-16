@@ -1,7 +1,7 @@
 {
   "name": "meeting-scheduler",
   "private": true,
-  "packageManager": "pnpm@12.18.0",
+  "packageManager": "pnpm@12.21.0",
   "scripts": {
     "lint": "prettier --check . --ignore-path .gitignore --ignore-path .git/info/exclude --ignore-path .prettierignore && pnpm --filter api lint && pnpm --filter web lint",
     "lint:fix": "pnpm --filter api lint:fix && pnpm --filter web lint:fix && prettier --write . --ignore-path .gitignore --ignore-path .git/info/exclude --ignore-path .prettierignore",
