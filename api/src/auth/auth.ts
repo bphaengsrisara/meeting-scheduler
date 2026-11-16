@@ -14,6 +14,9 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: {
     enabled: true,
+    // NIST SP 800-63B for single-factor passwords; see docs/auth.md.
+    minPasswordLength: 15,
+    maxPasswordLength: 64,
     // Argon2id instead of Better Auth's default scrypt.
     password: { hash: hashPassword, verify: verifyPassword },
   },

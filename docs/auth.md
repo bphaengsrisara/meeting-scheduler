@@ -13,6 +13,12 @@ guide requires.
 
 ## Passwords
 
+A password must be 15 to 64 characters long. This app has no second factor,
+and [NIST SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html) requires
+at least 15 characters for a password that is the only factor, and asks that
+at least 64 be allowed. The limits are set in Better Auth's options in
+`api/src/auth/auth.ts`.
+
 Passwords are hashed with Argon2id through Node.js's built-in
 [`crypto.argon2`](https://nodejs.org/docs/latest-v26.x/api/crypto.html), in
 `api/src/auth/password.ts`, instead of Better Auth's default scrypt.

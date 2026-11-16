@@ -75,3 +75,27 @@ describe("app", () => {
     expect((await send("203.0.113.2")).status).toBe(404);
   });
 });
+
+describe("sign-up password length", () => {
+  // Both are refused before anything is written to the database.
+  const signUp = (password: string) =>
+    request(createApp())
+      .post("/api/auth/sign-up/email")
+      .set(API_SECRET_HEADER, apiSecret)
+      .set("Origin", "http://localhost:3000")
+      .send({ email: "length-check@example.com", name: "", password });
+
+  it("refuses a password shorter than 15 characters", async () => {
+    const res = await signUp("a".repeat(14));
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("PASSWORD_TOO_SHORT");
+  });
+
+  it("refuses a password longer than 64 characters", async () => {
+    const res = await signUp("a".repeat(65));
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("PASSWORD_TOO_LONG");
+  });
+});
