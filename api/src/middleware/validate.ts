@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
-import { HttpError } from "../lib/http-error.ts";
+import { CHECK_FIELDS_MESSAGE, HttpError } from "../lib/http-error.ts";
 
 type Schemas = {
   body?: z.ZodType;
@@ -35,7 +35,7 @@ function toHttpError(part: keyof Schemas, error: z.ZodError) {
   const { formErrors, fieldErrors } = z.flattenError(error);
   return new HttpError(
     400,
-    formErrors[0] ?? "Check the fields and try again.",
+    formErrors[0] ?? CHECK_FIELDS_MESSAGE,
     fieldErrors as Record<string, string[]>,
   );
 }

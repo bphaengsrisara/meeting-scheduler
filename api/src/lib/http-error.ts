@@ -1,3 +1,6 @@
+// The message of a 400 when one or more fields are wrong.
+export const CHECK_FIELDS_MESSAGE = "Check the fields and try again.";
+
 // Messages for each field, as the web forms show them under their fields.
 export type FieldErrors = Record<string, string[]>;
 

@@ -1,4 +1,8 @@
-import { HttpError, type FieldErrors } from "../lib/http-error.ts";
+import {
+  CHECK_FIELDS_MESSAGE,
+  HttpError,
+  type FieldErrors,
+} from "../lib/http-error.ts";
 import {
   EXCLUSION_VIOLATION,
   FOREIGN_KEY_VIOLATION,
@@ -179,7 +183,7 @@ function ruleErrors(
 
 function throwIfAny(errors: FieldErrors) {
   if (Object.keys(errors).length > 0) {
-    throw new HttpError(400, "Check the fields and try again.", errors);
+    throw new HttpError(400, CHECK_FIELDS_MESSAGE, errors);
   }
 }
 
@@ -196,7 +200,7 @@ async function refuseConflicts<T>(write: () => Promise<T>) {
     // The candidate or position does not exist, or the candidate belongs to
     // another user (meeting's foreign key to candidate (id, owner_id)).
     if (pgError?.code === FOREIGN_KEY_VIOLATION) {
-      throw new HttpError(400, "Check the fields and try again.", {
+      throw new HttpError(400, CHECK_FIELDS_MESSAGE, {
         [pgError.constraint?.includes("position")
           ? "positionId"
           : "candidateId"]: ["Pick one from the list."],

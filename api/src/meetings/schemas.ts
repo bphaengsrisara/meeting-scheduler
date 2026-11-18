@@ -54,6 +54,7 @@ export const updateMeetingBody = z
 
 export const listMeetingsQuery = z.object({
   page: z.coerce.number().int().min(1).default(1),
+  // 10 a page by default; up to 100 for the booking form's list of a day.
   pageSize: z.coerce.number().int().min(1).max(100).default(10),
   q: z.string().trim().max(NAME_MAX).optional(),
   status: z.enum(meetingStatus.enumValues).optional(),

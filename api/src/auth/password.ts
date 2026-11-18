@@ -8,10 +8,12 @@ const MEMORY_KIB = 19456;
 const PASSES = 2;
 const PARALLELISM = 1;
 const TAG_LENGTH = 32;
+// A random salt for each password, in bytes (docs/auth.md).
+const SALT_LENGTH = 16;
 
 // Returns $argon2id$v=19$m=19456,t=2,p=1$<salt>$<hash> (see docs/auth.md).
 export async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16);
+  const salt = randomBytes(SALT_LENGTH);
   const hash = await argon2Async("argon2id", {
     message: password,
     nonce: salt,
