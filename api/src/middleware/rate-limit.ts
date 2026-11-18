@@ -1,4 +1,5 @@
 import { ipKeyGenerator, rateLimit } from "express-rate-limit";
+import { env } from "../env.ts";
 import { CLIENT_IP_HEADER } from "./api-secret.ts";
 
 // For the app's own routes; Better Auth limits its routes itself.
@@ -6,7 +7,7 @@ import { CLIENT_IP_HEADER } from "./api-secret.ts";
 // that the web server forwards, not the address of the connection.
 export const rateLimiter = rateLimit({
   windowMs: 60 * 1000,
-  limit: 100,
+  limit: env.RATE_LIMIT_PER_MINUTE,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   keyGenerator: (req) =>

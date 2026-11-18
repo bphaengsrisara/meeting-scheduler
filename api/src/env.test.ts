@@ -15,6 +15,7 @@ describe("parseEnv", () => {
       LOG_LEVEL: "info",
       BETTER_AUTH_URL: "http://localhost:3001",
       WEB_ORIGIN: "http://localhost:3000",
+      RATE_LIMIT_PER_MINUTE: 100,
       ...required,
     });
   });

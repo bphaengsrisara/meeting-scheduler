@@ -2,6 +2,7 @@ import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
 import { createApp } from "./app.ts";
 import { db } from "./db/client.ts";
+import { env } from "./env.ts";
 import { API_SECRET_HEADER } from "./middleware/api-secret.ts";
 
 // Same value as API_SECRET in vitest.config.ts.
@@ -58,7 +59,7 @@ describe("app", () => {
     expect(res.body).toEqual({ error: { message: "Not found" } });
   });
 
-  it("limits each browser IP to 100 requests a minute", async () => {
+  it("limits each browser IP to its requests a minute", async () => {
     const app = createApp();
     const send = (ip: string) =>
       request(app)
@@ -66,7 +67,7 @@ describe("app", () => {
         .set(API_SECRET_HEADER, apiSecret)
         .set("x-client-ip", ip);
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < env.RATE_LIMIT_PER_MINUTE; i++) {
       await send("203.0.113.1");
     }
 
