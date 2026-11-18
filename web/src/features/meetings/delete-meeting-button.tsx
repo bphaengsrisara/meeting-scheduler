@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useState, useTransition } from "react";
+import { useTransition } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -12,6 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 
 // Delete asks first: a deleted meeting cannot be brought back.
 export function DeleteMeetingButton({
@@ -21,9 +22,7 @@ export function DeleteMeetingButton({
   summary: string;
   onDelete: () => Promise<boolean>;
 }) {
-  const [open, setOpen] = useState(false);
-  // Closed when Next.js hides the page, so it is not open on return.
-  useLayoutEffect(() => () => setOpen(false), []);
+  const [open, setOpen] = useClosedWhenHidden();
   const [isPending, startTransition] = useTransition();
 
   return (

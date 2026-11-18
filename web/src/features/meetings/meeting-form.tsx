@@ -44,10 +44,9 @@ type MeetingFormProps = {
   dayMeetings?: Meeting[] | null;
 };
 
-// Next.js keeps a page the user left, hidden, with its state (React's
-// Activity). A form that was saved, deleted or left with "Leave" starts
-// fresh when it is shown again; one left any other way keeps the draft.
-// See Next.js "Preserving UI state".
+// Next.js keeps a page the user left with its state (Next.js "Preserving UI
+// state"). A form saved, deleted or left with "Leave" starts fresh when shown
+// again; one left any other way keeps the draft.
 export function MeetingForm(props: MeetingFormProps) {
   const [round, setRound] = useState(0);
   const resetWhenHidden = useRef(false);

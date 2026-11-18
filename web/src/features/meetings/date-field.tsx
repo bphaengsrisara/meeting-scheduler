@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarIcon } from "lucide-react";
-import { useLayoutEffect, useState } from "react";
+import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   InputGroup,
@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatLongDay, fromDay, parseTypedDay, toDay } from "@/lib/dates";
+import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 
 // The meeting's day: picked from the calendar or typed. A typed date is read
 // when the box loses focus; text that is not a date is reported as such.
@@ -32,9 +33,7 @@ export function DateField({
   onChange: (day: string, unreadable: boolean) => void;
 }) {
   const [text, setText] = useState(day ? formatLongDay(day) : "");
-  const [open, setOpen] = useState(false);
-  // Closed when Next.js hides the page, so it is not open on return.
-  useLayoutEffect(() => () => setOpen(false), []);
+  const [open, setOpen] = useClosedWhenHidden();
 
   const pick = (next: string) => {
     setText(next ? formatLongDay(next) : "");

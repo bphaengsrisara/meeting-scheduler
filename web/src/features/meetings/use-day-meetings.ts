@@ -3,10 +3,9 @@
 import { useRef, useState } from "react";
 import type { Meeting } from "./types";
 
-// The user's meetings on the picked day, loaded as the date changes. null
-// while loading or with no date. The edited meeting is left out of its own
-// list. "reloaded" marks a list loaded again after the database refused a
-// time booked meanwhile.
+// The user's meetings on the picked day, without the meeting being edited;
+// null while loading or with no date. "reloaded": loaded again after the
+// database refused a time booked meanwhile.
 export function useDayMeetings(
   initial: Meeting[] | null,
   editedId: string | undefined,

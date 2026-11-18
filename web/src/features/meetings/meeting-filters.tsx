@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDay, fromDay, toDay } from "@/lib/dates";
+import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 import { cn } from "@/lib/utils";
 import {
   countFilters,
@@ -52,6 +53,9 @@ export function MeetingFilters({
   const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(params.q ?? "");
   const [urlSearch, setUrlSearch] = useState(params.q);
+  // The last search the box sent itself. It can reach the URL after the
+  // user has typed more, and must not put the older text back.
+  const [sentSearch, setSentSearch] = useState(params.q);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const filters = countFilters(params);
 
@@ -59,7 +63,10 @@ export function MeetingFilters({
   // Clear All Filters); the user's own typing is never overwritten.
   if (params.q !== urlSearch) {
     setUrlSearch(params.q);
-    if ((params.q ?? "") !== search.trim()) setSearch(params.q ?? "");
+    if (params.q !== sentSearch) {
+      setSearch(params.q ?? "");
+      setSentSearch(params.q);
+    }
   }
 
   const go = (changes: Partial<DashboardParams>) =>
@@ -71,10 +78,11 @@ export function MeetingFilters({
   const onSearch = (value: string) => {
     setSearch(value);
     clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(
-      () => go({ q: value.trim() || undefined }),
-      SEARCH_PAUSE_MS,
-    );
+    searchTimer.current = setTimeout(() => {
+      const q = value.trim() || undefined;
+      setSentSearch(q);
+      go({ q });
+    }, SEARCH_PAUSE_MS);
   };
 
   const statuses = [
@@ -110,6 +118,7 @@ export function MeetingFilters({
                 onClick={() => {
                   clearTimeout(searchTimer.current);
                   setSearch("");
+                  setSentSearch(undefined);
                   go({ q: undefined });
                 }}
               >
@@ -180,11 +189,14 @@ function FilterSelect({
   onChange: (value: string) => void;
   className?: string;
 }) {
+  const [open, setOpen] = useClosedWhenHidden();
   return (
     <Select
       items={items}
       value={value}
       onValueChange={(next) => onChange(next as string)}
+      open={open}
+      onOpenChange={setOpen}
     >
       <SelectTrigger aria-label={label} className={cn("w-full", className)}>
         <span className="text-muted-foreground">{label}:</span>
@@ -220,16 +232,23 @@ function DateRangeFilter({
       : undefined,
   );
   const label = rangeLabel(from, to);
+  const [open, setOpen] = useClosedWhenHidden();
 
-  const apply = (open: boolean) => {
-    if (open) return;
+  // The picked range applies when the calendar closes.
+  const apply = () => {
     const start = range?.from ? toDay(range.from) : undefined;
     const end = range?.to ? toDay(range.to) : start;
     if (start !== from || end !== to) onChange(start, end);
   };
 
   return (
-    <Popover onOpenChange={apply}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) apply();
+      }}
+    >
       <PopoverTrigger
         render={
           <Button

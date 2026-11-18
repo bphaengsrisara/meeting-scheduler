@@ -1,7 +1,7 @@
 "use client";
 
 import { SearchIcon } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Combobox,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/combobox";
 import { InputGroupAddon } from "@/components/ui/input-group";
 import { formatDate } from "@/lib/dates";
+import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 import { SEARCH_PAUSE_MS } from "./meeting-filters";
 import type { Position } from "./types";
 
@@ -47,10 +48,7 @@ export function CandidateField({
   onPick: (candidate: CandidateOption) => void;
 }) {
   const [suggestions, setSuggestions] = useState<CandidateOption[]>([]);
-  const [open, setOpen] = useState(false);
-  // Next.js keeps a page the user left; the list must not be open when they
-  // come back (Next.js "Preserving UI state": close it when hidden).
-  useLayoutEffect(() => () => setOpen(false), []);
+  const [open, setOpen] = useClosedWhenHidden();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Only the latest search may fill the list; an older answer can come late.
   const latest = useRef(0);
@@ -79,10 +77,9 @@ export function CandidateField({
   };
 
   const typed = name.trim();
-  // Two people can share a name, so a typed name can always be added as a
-  // new candidate, even when someone with that name is listed. While
-  // loading, the list is empty: an older answer's names could be picked by
-  // Enter for a name the user did not type.
+  // Two people can share a name, so a typed name can always be added as new.
+  // While loading, the list is empty: Enter must not pick a name from an
+  // older answer.
   let items: CandidateOption[] = [];
   if (!loading) {
     items = typed

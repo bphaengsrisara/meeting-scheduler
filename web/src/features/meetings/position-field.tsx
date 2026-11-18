@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 import type { MeetingFormInput, MeetingFormValues } from "./booking";
 import type { Position } from "./types";
 
@@ -21,6 +22,7 @@ export function PositionField({
   control: Control<MeetingFormInput, unknown, MeetingFormValues>;
   positions: Position[];
 }) {
+  const [open, setOpen] = useClosedWhenHidden();
   return (
     <Controller
       name="positionId"
@@ -35,6 +37,8 @@ export function PositionField({
             }))}
             value={field.value || null}
             onValueChange={(value) => field.onChange(value ?? "")}
+            open={open}
+            onOpenChange={setOpen}
           >
             <SelectTrigger
               id="position"
