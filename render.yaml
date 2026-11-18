@@ -43,10 +43,11 @@ services:
       - key: BETTER_AUTH_SECRET
         generateValue: true
       # Public addresses: free services cannot receive private-network traffic.
+      # Render adds a suffix to the names, and so to the addresses.
       - key: BETTER_AUTH_URL
-        value: https://meeting-scheduler-demo-api.onrender.com
+        value: https://meeting-scheduler-demo-api-mpt5.onrender.com
       - key: WEB_ORIGIN
-        value: https://meeting-scheduler-demo-web.onrender.com
+        value: https://meeting-scheduler-demo-web-mpt5.onrender.com
       - fromGroup: meeting-scheduler-shared
 
   - type: web
@@ -66,5 +67,5 @@ services:
         - pnpm-workspace.yaml
     envVars:
       - key: API_URL
-        value: https://meeting-scheduler-demo-api.onrender.com
+        value: https://meeting-scheduler-demo-api-mpt5.onrender.com
       - fromGroup: meeting-scheduler-shared
