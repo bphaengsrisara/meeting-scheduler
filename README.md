@@ -145,6 +145,11 @@ pnpm verify      # All of it in order: lint:fix, typecheck, test, build, test:e2
 Playwright needs its browser once:
 `pnpm --filter web exec playwright install chromium --only-shell`.
 
+GitHub Actions runs the same checks (lint, typecheck, test, build, test:e2e)
+on every push to `main` and on every pull request, with PostgreSQL 18 as a
+service container and the `.env.example` files as the `.env` files; see
+`.github/workflows/ci.yml`.
+
 Prettier has one config for both apps, `.prettierrc.json` at the root. A
 formatting problem makes `pnpm lint` fail; `pnpm lint:fix` fixes it. Each
 root script names the apps it runs in, so an app that is missing the script
