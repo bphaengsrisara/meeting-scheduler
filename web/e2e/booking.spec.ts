@@ -63,8 +63,7 @@ test("book, edit and delete a meeting", async ({ page, request }) => {
     page.getByText("This time overlaps your meeting with Jan Novak"),
   ).toBeVisible();
 
-  // The edit page is reached from the candidate page (commit 8); until
-  // then the test opens it by its address.
+  // No page links to the edit form yet, so the test opens it by its address.
   const api = await apiAs(page.context(), request);
   const { meetings } = await api.get<{ meetings: { id: string }[] }>(
     "/meetings",

@@ -12,13 +12,13 @@ export function DayMeetings({
   picked,
   zone,
   reloaded,
-}: {
+}: Readonly<{
   day: string;
   meetings: Meeting[] | null;
   picked: { start: Date; end: Date } | null;
   zone: string;
   reloaded: boolean;
-}) {
+}>) {
   return (
     <section
       aria-live="polite"

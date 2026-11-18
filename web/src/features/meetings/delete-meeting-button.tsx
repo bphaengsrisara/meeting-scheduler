@@ -18,10 +18,10 @@ import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 export function DeleteMeetingButton({
   summary,
   onDelete,
-}: {
+}: Readonly<{
   summary: string;
   onDelete: () => Promise<boolean>;
-}) {
+}>) {
   const [open, setOpen] = useClosedWhenHidden();
   const [isPending, startTransition] = useTransition();
 

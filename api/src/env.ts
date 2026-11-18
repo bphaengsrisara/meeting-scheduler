@@ -15,7 +15,7 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.url().default("http://localhost:3001"),
   // The web app; Better Auth accepts requests from this origin only.
   WEB_ORIGIN: z.url().default("http://localhost:3000"),
-  // Requests a minute from one browser on the app's own routes (A5). The
+  // Requests a minute from one browser on the app's own routes. The
   // end-to-end tests raise it: they all come from one machine.
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(100),
   // Shared with the web server only; every request except /health needs it.

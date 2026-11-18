@@ -47,7 +47,7 @@ type MeetingFormProps = {
 // Next.js keeps a page the user left with its state (Next.js "Preserving UI
 // state"). A form saved, deleted or left with "Leave" starts fresh when shown
 // again; one left any other way keeps the draft.
-export function MeetingForm(props: MeetingFormProps) {
+export function MeetingForm(props: Readonly<MeetingFormProps>) {
   const [round, setRound] = useState(0);
   const resetWhenHidden = useRef(false);
   useLayoutEffect(
@@ -78,7 +78,7 @@ function MeetingFields({
   zone,
   dayMeetings: initialDayMeetings = null,
   onDone,
-}: MeetingFormProps & { onDone: () => void }) {
+}: Readonly<MeetingFormProps & { onDone: () => void }>) {
   const isEdit = meeting !== undefined;
   const [isPending, startTransition] = useTransition();
   const [unreadableDate, setUnreadableDate] = useState(false);

@@ -1,9 +1,8 @@
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 
-// "‹ Back" above a page title. The booking forms lead back to the dashboard
-// until the candidate page exists (commit 8).
-export function BackLink({ href }: { href: string }) {
+// "‹ Back" above a page title.
+export function BackLink({ href }: Readonly<{ href: string }>) {
   return (
     <Link
       href={href}

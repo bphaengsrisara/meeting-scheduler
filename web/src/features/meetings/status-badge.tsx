@@ -9,7 +9,7 @@ const looks = {
   cancelled: { label: "Cancelled", variant: "destructive" },
 } as const;
 
-export function StatusBadge({ status }: { status: MeetingStatus }) {
+export function StatusBadge({ status }: Readonly<{ status: MeetingStatus }>) {
   const { label, variant } = looks[status];
   return <Badge variant={variant}>{label}</Badge>;
 }

@@ -37,7 +37,7 @@ export function CandidateField({
   invalid,
   onType,
   onPick,
-}: {
+}: Readonly<{
   id: string;
   candidateId: string;
   name: string;
@@ -46,7 +46,7 @@ export function CandidateField({
   invalid: boolean;
   onType: (name: string) => void;
   onPick: (candidate: CandidateOption) => void;
-}) {
+}>) {
   const [suggestions, setSuggestions] = useState<CandidateOption[]>([]);
   const [open, setOpen] = useClosedWhenHidden();
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);

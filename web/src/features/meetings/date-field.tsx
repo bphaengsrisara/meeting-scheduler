@@ -25,13 +25,13 @@ export function DateField({
   invalid,
   disablePast,
   onChange,
-}: {
+}: Readonly<{
   id: string;
   day: string;
   invalid: boolean;
   disablePast: boolean;
   onChange: (day: string, unreadable: boolean) => void;
-}) {
+}>) {
   const [text, setText] = useState(day ? formatLongDay(day) : "");
   const [open, setOpen] = useClosedWhenHidden();
 

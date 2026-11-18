@@ -8,7 +8,9 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 
-export function PasswordInput(props: ComponentProps<typeof InputGroupInput>) {
+export function PasswordInput(
+  props: Readonly<ComponentProps<typeof InputGroupInput>>,
+) {
   const [visible, setVisible] = useState(false);
 
   return (

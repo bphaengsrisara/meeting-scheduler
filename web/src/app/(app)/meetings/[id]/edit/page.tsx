@@ -21,7 +21,7 @@ const EDITABLE = new Set(["pending", "confirmed"]);
 
 // The title shows at once; the form follows when its data is read.
 export default function EditMeetingPage(
-  props: PageProps<"/meetings/[id]/edit">,
+  props: Readonly<PageProps<"/meetings/[id]/edit">>,
 ) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -38,9 +38,9 @@ export default function EditMeetingPage(
 
 async function EditMeetingForm({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ id: string }>;
-}) {
+}>) {
   const [, { id }, zone] = await Promise.all([
     requireUser(),
     params,

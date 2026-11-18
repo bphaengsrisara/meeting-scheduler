@@ -18,10 +18,10 @@ import type { Position } from "./types";
 export function PositionField({
   control,
   positions,
-}: {
+}: Readonly<{
   control: Control<MeetingFormInput, unknown, MeetingFormValues>;
   positions: Position[];
-}) {
+}>) {
   const [open, setOpen] = useClosedWhenHidden();
   return (
     <Controller

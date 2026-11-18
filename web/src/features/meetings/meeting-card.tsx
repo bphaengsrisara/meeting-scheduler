@@ -13,15 +13,14 @@ import { formatMeetingTime } from "@/lib/dates";
 import { StatusBadge } from "./status-badge";
 import type { Meeting } from "./types";
 
-// One meeting. The card becomes the link to the candidate page, with "View
-// Details", when that page exists (commit 7).
+// One meeting. No link yet: the candidate page it would open is not built.
 export function MeetingCard({
   meeting,
   zone,
-}: {
+}: Readonly<{
   meeting: Meeting;
   zone: string;
-}) {
+}>) {
   const { candidate, position } = meeting;
   const online = meeting.type === "online";
   const TypeIcon = online ? VideoIcon : MapPinIcon;

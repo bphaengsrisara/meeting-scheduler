@@ -11,10 +11,10 @@ import { RadioChoice } from "./radio-choice";
 export function MeetingTypeFields({
   form,
   online,
-}: {
+}: Readonly<{
   form: UseFormReturn<MeetingFormInput, unknown, MeetingFormValues>;
   online: boolean;
-}) {
+}>) {
   return (
     <>
       <Controller

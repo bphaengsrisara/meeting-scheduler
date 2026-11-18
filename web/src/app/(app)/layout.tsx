@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { AppHeader } from "@/components/app-header";
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+export default function AppLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <>
       {/* Hidden until Tab reaches it; jumps past the header to the page. */}

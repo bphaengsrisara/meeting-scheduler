@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { logout } from "./actions";
 
 // A guest who logs out cannot come back to their meetings, so they confirm.
-export function LogoutButton({ isGuest }: { isGuest: boolean }) {
+export function LogoutButton({ isGuest }: Readonly<{ isGuest: boolean }>) {
   const [open, setOpen] = useState(false);
   // The header stays on screen from page to page, so the dialog closes
   // when the address changes (the browser's Back or Forward while open).

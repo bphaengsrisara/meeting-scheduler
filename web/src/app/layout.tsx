@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Candidate Meeting Scheduler",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<LayoutProps<"/">>) {
   return (
     <html lang="en" className={`${publicSans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">

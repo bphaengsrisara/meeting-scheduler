@@ -17,7 +17,9 @@ import { getTimeZone } from "@/lib/time-zone";
 
 export const metadata: Metadata = { title: "Upcoming Meetings · Vellicor" };
 
-export default async function UpcomingMeetingsPage(props: PageProps<"/">) {
+export default async function UpcomingMeetingsPage(
+  props: Readonly<PageProps<"/">>,
+) {
   const [user, zone, searchParams] = await Promise.all([
     requireUser(),
     getTimeZone(),

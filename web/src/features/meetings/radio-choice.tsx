@@ -6,11 +6,11 @@ export function RadioChoice({
   id,
   value,
   label,
-}: {
+}: Readonly<{
   id: string;
   value: string;
   label: string;
-}) {
+}>) {
   return (
     <div className="flex items-center gap-2">
       <RadioGroupItem id={id} value={value} />

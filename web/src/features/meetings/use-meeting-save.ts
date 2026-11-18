@@ -22,8 +22,7 @@ import type { Meeting } from "./types";
 export type Failure = { title?: string; message: string };
 type Refusal = Extract<SaveResult, { ok: false }>;
 
-// Where a saved or deleted meeting leads. The candidate page takes over when
-// it exists (commit 8).
+// Where a saved or deleted meeting leads.
 const AFTER_SAVE = "/";
 
 const failedTo = (action: string) =>

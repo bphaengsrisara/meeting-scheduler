@@ -45,10 +45,10 @@ export const SEARCH_PAUSE_MS = 300;
 export function MeetingFilters({
   params,
   positions,
-}: {
+}: Readonly<{
   params: DashboardParams;
   positions: Position[];
-}) {
+}>) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(params.q ?? "");
@@ -182,13 +182,13 @@ function FilterSelect({
   value,
   onChange,
   className,
-}: {
+}: Readonly<{
   label: string;
   items: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
   className?: string;
-}) {
+}>) {
   const [open, setOpen] = useClosedWhenHidden();
   return (
     <Select
@@ -221,11 +221,11 @@ function DateRangeFilter({
   from,
   to,
   onChange,
-}: {
+}: Readonly<{
   from?: string;
   to?: string;
   onChange: (from?: string, to?: string) => void;
-}) {
+}>) {
   const [range, setRange] = useState<DateRange | undefined>(
     from
       ? { from: fromDay(from), to: to ? fromDay(to) : undefined }

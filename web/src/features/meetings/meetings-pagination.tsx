@@ -16,10 +16,10 @@ import { pageNumbers } from "./page-numbers";
 export function MeetingsPagination({
   params,
   totalPages,
-}: {
+}: Readonly<{
   params: DashboardParams;
   totalPages: number;
-}) {
+}>) {
   if (totalPages <= 1) return null;
   const page = Math.min(params.page, totalPages);
   const href = (to: number) => dashboardHref(params, { page: to });

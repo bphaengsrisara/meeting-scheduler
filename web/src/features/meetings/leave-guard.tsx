@@ -19,10 +19,10 @@ import { Button } from "@/components/ui/button";
 export function LeaveGuard({
   when,
   onLeave,
-}: {
+}: Readonly<{
   when: boolean;
   onLeave: () => void;
-}) {
+}>) {
   const router = useRouter();
   const [href, setHref] = useState<string | null>(null);
   // Next.js keeps a page the user left, with its state. The dialog is a

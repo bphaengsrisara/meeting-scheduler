@@ -18,12 +18,12 @@ export function TimeField({
   label,
   control,
   onPicked,
-}: {
+}: Readonly<{
   name: "startTime" | "endTime";
   label: string;
   control: Control<MeetingFormInput, unknown, MeetingFormValues>;
   onPicked?: (value: string) => void;
-}) {
+}>) {
   return (
     <Controller
       name={name}
