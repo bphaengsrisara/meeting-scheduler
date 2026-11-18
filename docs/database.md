@@ -5,7 +5,9 @@ migrations are in `api/drizzle/`.
 
 ## No double booking
 
-One user's meetings cannot overlap, unless one is cancelled. An account is
+One user's meetings still to happen (pending or confirmed) cannot overlap. A
+completed meeting is over and a cancelled one called off, so neither holds
+its time: a meeting completed before its booked end frees the rest. An account is
 one interviewer, and one person cannot be in two meetings at once; a team
 with several interviewers uses several accounts.
 
@@ -14,11 +16,12 @@ reads and then writes, so two requests sent at the same moment can both
 pass it. PostgreSQL refuses the second instead, and the API turns its error
 (23P01) into a 409.
 
-`api/drizzle/0002_no-double-booking.sql`:
+`api/drizzle/0002_no-double-booking.sql`, rebuilt by
+`0004_open-meetings-hold-time.sql` to cover only meetings still to happen:
 
 ```sql
 EXCLUDE USING gist (owner_id WITH =, tstzrange(start_at, end_at) WITH &&)
-WHERE (status <> 'cancelled')
+WHERE (status IN ('pending', 'confirmed'))
 ```
 
 - `tstzrange(start_at, end_at)` includes the start and leaves out the end,
@@ -32,6 +35,13 @@ WHERE (status <> 'cancelled')
   drizzle-kit migration (`drizzle-kit generate --custom`).
 - `api/src/db/no-double-booking.test.ts` sends two overlapping
   bookings at once to a real PostgreSQL (Testcontainers); one is refused.
+  It also checks that a completed meeting does not block a new one.
+- A completed meeting keeps its booked start and end, even when it finished
+  early. The moment someone marks it completed is not the real end (it can
+  be pressed during the meeting or hours later), and calendar standards
+  keep the booked times too, with no "actual end" field. So History can show
+  two meetings whose booked times overlap: the second was booked after the
+  first had finished.
 
 ## The owner is stored twice, and kept equal
 

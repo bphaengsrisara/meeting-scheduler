@@ -134,6 +134,12 @@ function MeetingFields({
   const overlapping = picked
     ? (day.meetings ?? []).filter((other) => overlaps(picked, other))
     : [];
+  // A confirmed time is agreed; a new one has to be confirmed again.
+  const unconfirms =
+    meeting?.status === "confirmed" &&
+    picked !== null &&
+    (picked.start.getTime() !== new Date(meeting.startAt).getTime() ||
+      picked.end.getTime() !== new Date(meeting.endAt).getTime());
 
   // The form's own checks before anything is sent; then the API decides.
   const onSubmit = (values: MeetingFormValues) =>
@@ -141,8 +147,8 @@ function MeetingFields({
       clearFailure();
       setCheckOverlap(true);
       const { start } = meetingTimes(values, zone);
-      // A new meeting must be in the future; an edited one keeps its time.
-      if (!isEdit && start <= new Date()) {
+      // Booked or moved, a meeting starts later than now.
+      if (start <= new Date()) {
         form.setError(
           "startTime",
           { message: "Start time must be later than now." },
@@ -243,7 +249,7 @@ function MeetingFields({
                     id="date"
                     day={field.value}
                     invalid={fieldState.invalid || unreadableDate}
-                    disablePast={!isEdit}
+                    disablePast
                     onChange={(next, unreadable) => {
                       setUnreadableDate(unreadable);
                       if (next === field.value) return;
@@ -269,6 +275,12 @@ function MeetingFields({
             />
             <TimeField name="endTime" label="End Time" control={form.control} />
           </div>
+          {unconfirms && (
+            <p className="text-sm text-muted-foreground">
+              Changing the time sets this meeting back to pending, to be
+              confirmed again.
+            </p>
+          )}
           {timeErrors.length > 0 && (
             <div role="alert" className="flex flex-col gap-1">
               {timeErrors.map((message) => (

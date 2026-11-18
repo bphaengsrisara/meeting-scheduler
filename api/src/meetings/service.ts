@@ -21,6 +21,11 @@ export const OVERLAP_MESSAGE =
   "This time overlaps an existing meeting. Choose another time.";
 const IN_HISTORY_MESSAGE =
   "This meeting is completed or cancelled, so it can't be changed.";
+const STARTED_MESSAGE =
+  "This meeting has started, so it can't be changed. Mark it completed, or cancel it if it did not happen.";
+const LOCKED_MESSAGE =
+  "This meeting has started, or is completed or cancelled, so it can't be changed.";
+const START_IN_FUTURE_MESSAGE = "Start time must be later than now.";
 
 // The only status moves; anything else is refused.
 const MOVES = {
@@ -86,7 +91,7 @@ export async function createMeeting(
 ) {
   const errors = ruleErrors(body);
   if (body.startAt <= now) {
-    errors.startAt = ["Start time must be later than now."];
+    errors.startAt = [START_IN_FUTURE_MESSAGE];
   }
   throwIfAny(errors);
 
@@ -102,37 +107,52 @@ export async function createMeeting(
   return getMeeting(ownerId, id);
 }
 
-// A meeting that has passed keeps its time, so it can still be completed.
+// A meeting can change until it starts. A confirmed meeting whose time
+// changes goes back to pending: the new time has to be agreed again.
 export async function updateMeeting(
   ownerId: string,
   id: string,
   changes: UpdateMeetingBody,
+  now = new Date(),
 ) {
-  const current = await getOpenMeeting(ownerId, id);
-  throwIfAny(
-    ruleErrors({
-      startAt: changes.startAt ?? current.startAt,
-      endAt: changes.endAt ?? current.endAt,
-      type: changes.type ?? current.type,
-      platform:
-        changes.platform === undefined ? current.platform : changes.platform,
-    }),
-  );
+  const current = await getEditableMeeting(ownerId, id, now);
+  const startAt = changes.startAt ?? current.startAt;
+  const endAt = changes.endAt ?? current.endAt;
+  const errors = ruleErrors({
+    startAt,
+    endAt,
+    type: changes.type ?? current.type,
+    platform:
+      changes.platform === undefined ? current.platform : changes.platform,
+  });
+  if (startAt <= now) {
+    errors.startAt = [START_IN_FUTURE_MESSAGE];
+  }
+  throwIfAny(errors);
 
+  const timeChanged =
+    startAt.getTime() !== current.startAt.getTime() ||
+    endAt.getTime() !== current.endAt.getTime();
+  const status =
+    current.status === "confirmed" && timeChanged ? "pending" : undefined;
   const updated = await refuseConflicts(() =>
-    repository.updateOpenMeeting(ownerId, id, changes),
+    repository.updateOpenMeeting(ownerId, id, { ...changes, status }),
   );
   if (!updated) {
-    // Completed or cancelled between the read and the write.
-    throw new HttpError(409, IN_HISTORY_MESSAGE);
+    // Moved to History, or started, between the read and the write.
+    throw new HttpError(409, LOCKED_MESSAGE);
   }
   return getMeeting(ownerId, id);
 }
 
-export async function deleteMeeting(ownerId: string, id: string) {
-  await getOpenMeeting(ownerId, id);
+export async function deleteMeeting(
+  ownerId: string,
+  id: string,
+  now = new Date(),
+) {
+  await getEditableMeeting(ownerId, id, now);
   if (!(await repository.deleteOpenMeeting(ownerId, id))) {
-    throw new HttpError(409, IN_HISTORY_MESSAGE);
+    throw new HttpError(409, LOCKED_MESSAGE);
   }
 }
 
@@ -175,10 +195,14 @@ export async function saveFeedback(
   return getMeeting(ownerId, id);
 }
 
-async function getOpenMeeting(ownerId: string, id: string) {
+// Completed, cancelled and started meetings are part of the record.
+async function getEditableMeeting(ownerId: string, id: string, now: Date) {
   const meeting = await getMeeting(ownerId, id);
   if (!repository.OPEN_STATUSES.includes(meeting.status)) {
     throw new HttpError(409, IN_HISTORY_MESSAGE);
+  }
+  if (meeting.startAt <= now) {
+    throw new HttpError(409, STARTED_MESSAGE);
   }
   return meeting;
 }

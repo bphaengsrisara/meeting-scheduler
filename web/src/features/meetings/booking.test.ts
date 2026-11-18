@@ -151,8 +151,19 @@ describe("overlaps", () => {
       overlaps(picked, {
         startAt: "2026-11-20T03:30:00Z",
         endAt: "2026-11-20T05:00:00Z",
+        status: "confirmed",
       }),
     ).toBe(true);
+  });
+
+  it("ignores a completed meeting: it is over, so its time is free", () => {
+    expect(
+      overlaps(picked, {
+        startAt: "2026-11-20T03:30:00Z",
+        endAt: "2026-11-20T05:00:00Z",
+        status: "completed",
+      }),
+    ).toBe(false);
   });
 
   it("lets meetings sit back to back", () => {
@@ -160,6 +171,7 @@ describe("overlaps", () => {
       overlaps(picked, {
         startAt: "2026-11-20T04:00:00Z",
         endAt: "2026-11-20T05:00:00Z",
+        status: "pending",
       }),
     ).toBe(false);
   });

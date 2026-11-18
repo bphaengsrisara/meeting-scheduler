@@ -15,8 +15,8 @@ import { getTimeZone } from "@/lib/time-zone";
 
 export const metadata: Metadata = { title: "Edit Meeting · Vellicor" };
 
-// Only pending and confirmed meetings can change; completed and cancelled
-// ones are records, so there is nothing to edit.
+// Only pending and confirmed meetings that have not started can change;
+// the others are part of the record, so there is nothing to edit.
 const EDITABLE = new Set(["pending", "confirmed"]);
 
 const TITLE = "Edit Meeting";
@@ -52,7 +52,11 @@ async function EditMeetingForm({
     getTimeZone(),
   ]);
   const meeting = await getMeeting(id);
-  if (!meeting || !EDITABLE.has(meeting.status)) {
+  if (
+    !meeting ||
+    !EDITABLE.has(meeting.status) ||
+    new Date(meeting.startAt) <= new Date()
+  ) {
     notFound();
   }
   // The meeting's day, listed up front so the form opens with it.

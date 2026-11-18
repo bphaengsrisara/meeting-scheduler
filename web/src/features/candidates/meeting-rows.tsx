@@ -70,9 +70,10 @@ export function UpcomingRow({
     online && meeting.platform
       ? `Online, ${PLATFORM_LABELS[meeting.platform]}`
       : "Onsite";
-  // Completed by hand once it has started, never before (it can run late).
-  const started =
-    meeting.status === "confirmed" && new Date(meeting.startAt) <= now;
+  // Once started, a meeting is part of the record: no Edit, only its status
+  // moves. Completed by hand, never before it starts (it can run late).
+  const started = new Date(meeting.startAt) <= now;
+  const completable = started && meeting.status === "confirmed";
 
   return (
     <Row
@@ -88,8 +89,9 @@ export function UpcomingRow({
         <>
           {started && (
             <p className="text-muted-foreground">
-              This meeting has started. Mark it completed, or cancel it if it
-              did not happen.
+              {meeting.status === "confirmed"
+                ? "This meeting has started. Mark it completed, or cancel it if it did not happen."
+                : "This meeting has started. Confirm it to mark it completed, or cancel it if it did not happen."}
             </p>
           )}
           {meeting.notes && <p>{meeting.notes}</p>}
@@ -100,13 +102,15 @@ export function UpcomingRow({
           {meeting.status === "pending" && (
             <StatusButton id={meeting.id} move="confirm" />
           )}
-          {started && <StatusButton id={meeting.id} move="complete" />}
-          <Link
-            href={`/meetings/${meeting.id}/edit`}
-            className={cn(buttonVariants({ variant: "outline" }))}
-          >
-            Edit Meeting
-          </Link>
+          {completable && <StatusButton id={meeting.id} move="complete" />}
+          {!started && (
+            <Link
+              href={`/meetings/${meeting.id}/edit`}
+              className={cn(buttonVariants({ variant: "outline" }))}
+            >
+              Edit Meeting
+            </Link>
+          )}
           <CancelMeetingButton
             id={meeting.id}
             summary={`${candidateName} on ${timeOf(meeting, zone)}`}

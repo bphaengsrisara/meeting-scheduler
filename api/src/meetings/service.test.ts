@@ -173,7 +173,7 @@ describe("updateMeeting", () => {
   it("checks the rules on the stored meeting merged with the changes", async () => {
     // Only the end changes; it would be before the stored start.
     const error = await refusal(
-      service.updateMeeting(owner, stored.id, { endAt: hoursFromNow(23) }),
+      service.updateMeeting(owner, stored.id, { endAt: hoursFromNow(23) }, now),
     );
 
     expect(error.fields?.endAt).toEqual(["End time must be after start time."]);
@@ -187,7 +187,7 @@ describe("updateMeeting", () => {
     });
 
     const error = await refusal(
-      service.updateMeeting(owner, stored.id, { notes: "x" }),
+      service.updateMeeting(owner, stored.id, { notes: "x" }, now),
     );
 
     expect(error.status).toBe(409);
@@ -197,18 +197,104 @@ describe("updateMeeting", () => {
     vi.mocked(repository.findMeeting).mockResolvedValue(undefined);
 
     const error = await refusal(
-      service.updateMeeting(owner, stored.id, { notes: "x" }),
+      service.updateMeeting(owner, stored.id, { notes: "x" }, now),
     );
 
     expect(error.status).toBe(404);
   });
 });
 
+describe("updateMeeting: started and confirmed meetings", () => {
+  const started = { ...stored, startAt: hoursFromNow(-1), endAt: now };
+
+  it("refuses a meeting that has started: it is part of the record", async () => {
+    vi.mocked(repository.findMeeting).mockResolvedValue(started);
+
+    const error = await refusal(
+      service.updateMeeting(owner, stored.id, { notes: "x" }, now),
+    );
+
+    expect(error.status).toBe(409);
+    expect(repository.updateOpenMeeting).not.toHaveBeenCalled();
+  });
+
+  it("refuses moving a meeting to a time that has passed", async () => {
+    const error = await refusal(
+      service.updateMeeting(
+        owner,
+        stored.id,
+        { startAt: hoursFromNow(-2), endAt: hoursFromNow(-1) },
+        now,
+      ),
+    );
+
+    expect(error.fields?.startAt).toEqual([
+      "Start time must be later than now.",
+    ]);
+    expect(repository.updateOpenMeeting).not.toHaveBeenCalled();
+  });
+
+  it("sets a confirmed meeting back to pending when its time changes", async () => {
+    vi.mocked(repository.findMeeting).mockResolvedValue({
+      ...stored,
+      status: "confirmed",
+    });
+    vi.mocked(repository.updateOpenMeeting).mockResolvedValue(true);
+    const later = { startAt: hoursFromNow(48), endAt: hoursFromNow(49) };
+
+    await service.updateMeeting(owner, stored.id, later, now);
+
+    expect(repository.updateOpenMeeting).toHaveBeenCalledWith(
+      owner,
+      stored.id,
+      { ...later, status: "pending" },
+    );
+  });
+
+  it("keeps a confirmed meeting confirmed when only its notes change", async () => {
+    vi.mocked(repository.findMeeting).mockResolvedValue({
+      ...stored,
+      status: "confirmed",
+    });
+    vi.mocked(repository.updateOpenMeeting).mockResolvedValue(true);
+
+    await service.updateMeeting(owner, stored.id, { notes: "x" }, now);
+
+    expect(repository.updateOpenMeeting).toHaveBeenCalledWith(
+      owner,
+      stored.id,
+      { notes: "x", status: undefined },
+    );
+  });
+
+  it("answers 409 when it started or moved between the read and the write", async () => {
+    vi.mocked(repository.updateOpenMeeting).mockResolvedValue(false);
+
+    const error = await refusal(
+      service.updateMeeting(owner, stored.id, { notes: "x" }, now),
+    );
+
+    expect(error.status).toBe(409);
+  });
+});
+
 describe("deleteMeeting", () => {
+  it("refuses a meeting that has started: cancel it instead", async () => {
+    vi.mocked(repository.findMeeting).mockResolvedValue({
+      ...stored,
+      startAt: hoursFromNow(-1),
+    });
+
+    const error = await refusal(service.deleteMeeting(owner, stored.id, now));
+
+    expect(error.status).toBe(409);
+    expect(repository.deleteOpenMeeting).not.toHaveBeenCalled();
+  });
+
   it("deletes an open meeting", async () => {
     vi.mocked(repository.deleteOpenMeeting).mockResolvedValue(true);
 
-    await service.deleteMeeting(owner, stored.id);
+    await service.deleteMeeting(owner, stored.id, now);
 
     expect(repository.deleteOpenMeeting).toHaveBeenCalledWith(owner, stored.id);
   });
@@ -219,7 +305,7 @@ describe("deleteMeeting", () => {
       status: "cancelled",
     });
 
-    const error = await refusal(service.deleteMeeting(owner, stored.id));
+    const error = await refusal(service.deleteMeeting(owner, stored.id, now));
 
     expect(error.status).toBe(409);
     expect(repository.deleteOpenMeeting).not.toHaveBeenCalled();

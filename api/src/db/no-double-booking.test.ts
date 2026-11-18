@@ -63,4 +63,43 @@ describe("no double booking", () => {
     expect(refused).toHaveLength(1);
     expect(findPgError(refused[0].reason)?.code).toBe(EXCLUSION_VIOLATION);
   });
+
+  it("lets only pending and confirmed meetings hold their time", async () => {
+    const [owner] = await db
+      .insert(user)
+      .values({ name: "Interviewer", email: "second@example.com" })
+      .returning();
+    const [jane] = await db
+      .insert(candidate)
+      .values({ ownerId: owner.id, name: "Jane Doe" })
+      .returning();
+    const [role] = await db.select().from(position).limit(1);
+    const at = (startAt: string, endAt: string) => ({
+      ownerId: owner.id,
+      candidateId: jane.id,
+      positionId: role.id,
+      startAt: new Date(startAt),
+      endAt: new Date(endAt),
+      type: "on_site" as const,
+    });
+
+    // Completed early: the rest of its booked time is free again.
+    await db.insert(meeting).values({
+      ...at("2026-12-02T03:00:00Z", "2026-12-02T04:00:00Z"),
+      status: "completed",
+    });
+    await db
+      .insert(meeting)
+      .values(at("2026-12-02T03:30:00Z", "2026-12-02T04:00:00Z"));
+
+    // That new pending meeting holds its time.
+    const clash = await db
+      .insert(meeting)
+      .values(at("2026-12-02T03:45:00Z", "2026-12-02T04:15:00Z"))
+      .then(
+        () => undefined,
+        (err: unknown) => err,
+      );
+    expect(findPgError(clash)?.code).toBe(EXCLUSION_VIOLATION);
+  });
 });

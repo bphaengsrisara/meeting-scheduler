@@ -5,6 +5,7 @@ import {
   eq,
   gte,
   ilike,
+  gt,
   inArray,
   lt,
   ne,
@@ -15,17 +16,19 @@ import { candidate, feedback, meeting, position } from "../db/schema/app.ts";
 import { containsPattern } from "../lib/like.ts";
 
 export type MeetingStatus = (typeof meeting.$inferSelect)["status"];
+type MeetingFields = Pick<
+  typeof meeting.$inferInsert,
+  "positionId" | "startAt" | "endAt" | "type" | "platform" | "notes"
+>;
+// An edit can also set the status back to pending (a confirmed time moved).
 type MeetingChanges = Partial<
-  Pick<
-    typeof meeting.$inferInsert,
-    "positionId" | "startAt" | "endAt" | "type" | "platform" | "notes"
-  >
+  MeetingFields & Pick<typeof meeting.$inferInsert, "status">
 >;
 type FeedbackFields = Pick<
   typeof feedback.$inferInsert,
   "recommendation" | "comment"
 >;
-export type NewMeeting = Required<MeetingChanges> &
+export type NewMeeting = Required<MeetingFields> &
   ({ candidateId: string } | { candidateName: string });
 export type MeetingFilters = {
   from: Date;
@@ -40,6 +43,11 @@ export type MeetingFilters = {
 // Pending and confirmed meetings can still change; completed and cancelled
 // ones are History and are never edited or deleted.
 export const OPEN_STATUSES: MeetingStatus[] = ["pending", "confirmed"];
+
+// Edit and delete only touch an open meeting that has not started; a
+// started one is part of the record, so only its status can still move.
+const notStartedOpen = () =>
+  and(inArray(meeting.status, OPEN_STATUSES), gt(meeting.startAt, sql`now()`));
 
 // One meeting as the API returns it, with its candidate, position and
 // feedback (null until a completed meeting gets one).
@@ -148,7 +156,7 @@ export async function insertMeeting(ownerId: string, input: NewMeeting) {
   });
 }
 
-// Changes only an open meeting; false when none matched.
+// Changes only an open meeting not yet started; false when none matched.
 export async function updateOpenMeeting(
   ownerId: string,
   id: string,
@@ -157,7 +165,7 @@ export async function updateOpenMeeting(
   const updated = await db
     .update(meeting)
     .set(changes)
-    .where(and(ownedBy(ownerId, id), inArray(meeting.status, OPEN_STATUSES)))
+    .where(and(ownedBy(ownerId, id), notStartedOpen()))
     .returning({ id: meeting.id });
   return updated.length > 0;
 }
@@ -165,7 +173,7 @@ export async function updateOpenMeeting(
 export async function deleteOpenMeeting(ownerId: string, id: string) {
   const deleted = await db
     .delete(meeting)
-    .where(and(ownedBy(ownerId, id), inArray(meeting.status, OPEN_STATUSES)))
+    .where(and(ownedBy(ownerId, id), notStartedOpen()))
     .returning({ id: meeting.id });
   return deleted.length > 0;
 }

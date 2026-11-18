@@ -58,6 +58,8 @@ test("confirm, complete and add feedback on the candidate page", async ({
     ).toBeVisible({ timeout: SECOND_MS });
   }).toPass();
   await expect(page.getByText("This meeting has started.")).toBeVisible();
+  // A started meeting is part of the record: only its status can move.
+  await expect(page.getByRole("link", { name: "Edit Meeting" })).toHaveCount(1);
   await page.getByRole("button", { name: "Mark Completed" }).click();
   await expect(page.getByText("No feedback yet")).toBeVisible();
 
@@ -80,6 +82,19 @@ test("confirm, complete and add feedback on the candidate page", async ({
   await expect(discard).toContainText("Discard This Feedback?");
   await discard.getByRole("button", { name: "Discard" }).click();
   await expect(page.getByText("Recommendation: Yes")).toBeVisible();
+
+  // Moving a confirmed meeting's time sets it back to pending.
+  await page.getByRole("button", { name: "Confirm Meeting" }).click();
+  await expect(page.getByText("Meeting confirmed")).toBeVisible();
+  await page.getByRole("link", { name: "Edit Meeting" }).click();
+  await page.getByLabel("Start Time", { exact: true }).fill("09:00");
+  await page.getByLabel("End Time", { exact: true }).fill("10:00");
+  await expect(
+    page.getByText("Changing the time sets this meeting back to pending"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Save Changes" }).click();
+  await expect(page.getByText("Changes saved")).toBeVisible();
+  await expect(page.getByText("Pending", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Cancel Meeting" }).click();
   await page

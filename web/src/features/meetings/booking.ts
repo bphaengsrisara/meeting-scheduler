@@ -144,12 +144,16 @@ export function defaultEndTime(startTime: string) {
 }
 
 // Two meetings overlap when each starts before the other ends; back to back
-// is fine, the same rule as the database's [start, end) ranges.
+// is fine, the same rule as the database's [start, end) ranges. Only
+// meetings still to happen hold their time; completed ones are over.
 export function overlaps(
   a: { start: Date; end: Date },
-  b: { startAt: string; endAt: string },
+  b: Pick<Meeting, "startAt" | "endAt" | "status">,
 ) {
-  return a.start < new Date(b.endAt) && new Date(b.startAt) < a.end;
+  const holdsTime = b.status === "pending" || b.status === "confirmed";
+  return (
+    holdsTime && a.start < new Date(b.endAt) && new Date(b.startAt) < a.end
+  );
 }
 
 // The message under the times when the picked times overlap a meeting in

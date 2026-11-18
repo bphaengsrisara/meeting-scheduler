@@ -29,6 +29,13 @@
       "when": 1794962615700,
       "tag": "0003_positions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794999391838,
+      "tag": "0004_open-meetings-hold-time",
+      "breakpoints": true
     }
   ]
 }
