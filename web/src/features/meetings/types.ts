@@ -36,7 +36,7 @@ export type Meeting = {
   platform: "zoom" | "google_meet" | null;
   status: MeetingStatus;
   notes: string | null;
-  candidate: { id: string; name: string };
+  candidate: { id: string; name: string; email: string };
   position: Position;
   feedback: Feedback | null;
 };

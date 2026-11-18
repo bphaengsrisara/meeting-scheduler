@@ -29,7 +29,11 @@ const stored: Meeting = {
   platform: "zoom",
   status: "pending",
   notes: null,
-  candidate: { id: "01a1ec1c-0000-7000-8000-000000000003", name: "Jane Doe" },
+  candidate: {
+    id: "01a1ec1c-0000-7000-8000-000000000003",
+    name: "Jane Doe",
+    email: "jane.doe@example.com",
+  },
   position: { id: "01a1ec1c-0000-7000-8000-000000000004", name: "QA Engineer" },
   feedback: null,
 };

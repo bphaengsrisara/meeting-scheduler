@@ -108,18 +108,18 @@ export function CandidateField({
         latestStartAt: null,
       }
     : null;
-  // The second line of a suggestion (a common pattern: a muted line under
-  // the name). The email comes first: it tells apart two people with the
-  // same name.
+  // A suggestion reads like a meeting card: the role of their latest
+  // meeting beside the name (picking them fills Position with it), then a
+  // muted line with the email, which tells apart two people with one name.
+  const roleOf = (candidate: CandidateOption) =>
+    positions.find((position) => position.id === candidate.latestPositionId)
+      ?.name;
   const details = (candidate: CandidateOption) => {
-    const role = positions.find(
-      (position) => position.id === candidate.latestPositionId,
-    )?.name;
-    if (!role || !candidate.latestStartAt) {
+    if (!candidate.latestStartAt) {
       return `${candidate.email} · No meetings yet`;
     }
     const date = formatDate(new Date(candidate.latestStartAt), zone);
-    return `${candidate.email} · ${role} · latest meeting ${date}`;
+    return `${candidate.email} · latest meeting ${date}`;
   };
 
   return (
@@ -180,8 +180,11 @@ export function CandidateField({
             >
               {candidate.id ? (
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate">{candidate.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="break-words">{candidate.name}</span>
+                    <span className="text-xs">{roleOf(candidate)}</span>
+                  </span>
+                  <span className="text-xs break-words text-muted-foreground">
                     {details(candidate)}
                   </span>
                 </span>

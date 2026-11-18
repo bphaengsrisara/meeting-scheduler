@@ -62,7 +62,7 @@ test("book, edit and delete a meeting", async ({ page }) => {
     .fill("Jan Novak");
   await expect(
     page.getByRole("option", {
-      name: /^Jan Novak.*jan\.novak@example\.com · QA Engineer · latest meeting/,
+      name: /^Jan Novak.*QA Engineer.*jan\.novak@example\.com · latest meeting/,
     }),
   ).toBeVisible();
   await fillMeeting(page, "Jan Novak", "jan.novak@example.com", "10:30");

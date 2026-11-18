@@ -125,7 +125,11 @@ describe("meetingToForm", () => {
       platform: null,
       status: "pending",
       notes: null,
-      candidate: { id: "candidate-1", name: "Jane Doe" },
+      candidate: {
+        id: "candidate-1",
+        name: "Jane Doe",
+        email: "jane.doe@example.com",
+      },
       position: { id: "position-1", name: "QA Engineer" },
       feedback: null,
     };

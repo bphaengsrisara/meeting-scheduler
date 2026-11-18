@@ -33,7 +33,7 @@ const meetingOn = (day: number, status: MeetingStatus): Meeting => ({
   platform: null,
   status,
   notes: null,
-  candidate: { id: stored.id, name: stored.name },
+  candidate: { id: stored.id, name: stored.name, email: stored.email },
   position: { id: "01a1ec1c-0000-7000-8000-000000000004", name: "QA Engineer" },
   feedback: null,
 });

@@ -61,7 +61,11 @@ function selectMeetings() {
       platform: meeting.platform,
       status: meeting.status,
       notes: meeting.notes,
-      candidate: { id: candidate.id, name: candidate.name },
+      candidate: {
+        id: candidate.id,
+        name: candidate.name,
+        email: candidate.email,
+      },
       position: { id: position.id, name: position.name },
       feedback: {
         recommendation: feedback.recommendation,

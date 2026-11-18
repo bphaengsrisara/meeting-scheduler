@@ -36,8 +36,15 @@ export function MeetingCard({
             <AvatarFallback>{initials(candidate.name, "")}</AvatarFallback>
           </Avatar>
           <div className="flex min-w-0 flex-col gap-0.5">
-            <CardTitle className="truncate">{candidate.name}</CardTitle>
-            <CardDescription>{position.name}</CardDescription>
+            {/* The role beside the name, or under it when there is no room. */}
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <CardTitle className="break-words">{candidate.name}</CardTitle>
+              <span className="text-sm">{position.name}</span>
+            </div>
+            {/* Tells apart two people with the same name; quieter than the role. */}
+            <CardDescription className="text-xs break-words">
+              {candidate.email}
+            </CardDescription>
           </div>
         </div>
         <CardAction>

@@ -43,6 +43,10 @@ test("confirm, complete and add feedback on the candidate page", async ({
   });
 
   await page.reload();
+  // The card tells the candidate apart by email.
+  await expect(
+    page.getByText("ana.lima@example.com", { exact: true }).first(),
+  ).toBeVisible();
   await page
     .getByRole("link", { name: "View details for Ana Lima" })
     .first()
