@@ -181,10 +181,10 @@ export function CandidateField({
               {candidate.id ? (
                 <span className="flex min-w-0 flex-col">
                   <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="break-words">{candidate.name}</span>
+                    <span className="wrap-break-word">{candidate.name}</span>
                     <span className="text-xs">{roleOf(candidate)}</span>
                   </span>
-                  <span className="text-xs break-words text-muted-foreground">
+                  <span className="text-xs wrap-break-word text-muted-foreground">
                     {details(candidate)}
                   </span>
                 </span>

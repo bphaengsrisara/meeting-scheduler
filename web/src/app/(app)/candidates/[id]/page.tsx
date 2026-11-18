@@ -55,13 +55,13 @@ async function CandidateDetails({
           {/* As on the meeting cards: the role beside the name, the email
               under it, quieter than the role. */}
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="text-2xl font-semibold break-words">
+            <h1 className="text-2xl font-semibold wrap-break-word">
               {candidate.name}
             </h1>
             {role && <span className="text-lg">{role}</span>}
           </div>
           <div className="flex flex-wrap items-center gap-x-2">
-            <p className="text-sm break-words text-muted-foreground">
+            <p className="text-sm wrap-break-word text-muted-foreground">
               {candidate.email}
             </p>
             <EditDetailsButton

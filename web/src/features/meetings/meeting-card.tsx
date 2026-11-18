@@ -38,11 +38,13 @@ export function MeetingCard({
           <div className="flex min-w-0 flex-col gap-0.5">
             {/* The role beside the name, or under it when there is no room. */}
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <CardTitle className="break-words">{candidate.name}</CardTitle>
+              <CardTitle className="wrap-break-word">
+                {candidate.name}
+              </CardTitle>
               <span className="text-sm">{position.name}</span>
             </div>
             {/* Tells apart two people with the same name; quieter than the role. */}
-            <CardDescription className="text-xs break-words">
+            <CardDescription className="text-xs wrap-break-word">
               {candidate.email}
             </CardDescription>
           </div>
