@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
-import { env } from "./env";
+import { getEnv } from "./env";
 import { parseSetCookie } from "./set-cookie";
 
 // Every call to the API goes through here, from the web server only (the
@@ -11,6 +11,7 @@ export async function callApi(path: string, init: RequestInit = {}) {
     headers(),
     cookies(),
   ]);
+  const env = getEnv();
   const apiHeaders = new Headers(init.headers);
   apiHeaders.set("x-api-secret", env.API_SECRET);
 

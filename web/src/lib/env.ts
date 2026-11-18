@@ -8,12 +8,19 @@ const envSchema = z.object({
   API_SECRET: z.string().min(32),
 });
 
-const result = envSchema.safeParse(process.env);
+let env: z.infer<typeof envSchema> | undefined;
 
-if (!result.success) {
-  throw new Error(
-    `Invalid environment variables:\n${z.prettifyError(result.error)}`,
-  );
+// Checked on first use, at request time: next build loads this file too, and
+// the build has no secrets (the server gets them when it runs).
+export function getEnv() {
+  if (env) return env;
+
+  const result = envSchema.safeParse(process.env);
+  if (!result.success) {
+    throw new Error(
+      `Invalid environment variables:\n${z.prettifyError(result.error)}`,
+    );
+  }
+  env = result.data;
+  return env;
 }
-
-export const env = result.data;
