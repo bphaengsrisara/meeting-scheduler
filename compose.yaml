@@ -1,4 +1,5 @@
-# Local PostgreSQL for development: docker compose up -d db
+# docker compose up -d db: only PostgreSQL, for development with pnpm dev.
+# docker compose up --build: the whole stack, built from the two Dockerfiles.
 # The project name keeps the volume name unique to this repo.
 name: meeting-scheduler
 
@@ -19,6 +20,35 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    # The local-only example values, with the database's address in compose.
+    env_file: api/.env.example
+    environment:
+      # The image has production dependencies only, so no pretty logs.
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@db:5432/meeting_scheduler
+    ports:
+      - "3001:3001"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    env_file: web/.env.example
+    environment:
+      # The web server reaches the API by its service name.
+      API_URL: http://api:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
 
 volumes:
   db-data:

@@ -29,8 +29,8 @@ candidates and meetings, including the candidate page's data and feedback.
 | `api/`  | Backend: Express 5, TypeScript, run directly by Node.js |
 | `docs/` | Requirements, authentication, API routes, database      |
 
-`compose.yaml` runs PostgreSQL 18 for local work. Each app has a Dockerfile;
-see [Docker images](#docker-images).
+`compose.yaml` runs PostgreSQL 18 for local work, and can run the whole stack.
+Each app has a Dockerfile; see [Docker images](#docker-images).
 
 The two apps share one pnpm workspace.
 
@@ -172,3 +172,8 @@ migrations (`api/src/db/migrate.ts`) before the server starts, so a new
 image needs no separate migration step. The web image uses Next.js's
 standalone output. Neither image contains a `.env` file; the environment
 variables come from the host when the container runs.
+
+`docker compose up --build` runs both images with the database: the web app
+on http://localhost:3000 and the API on http://localhost:3001, with the
+`.env.example` values. The API runs in production mode there, so Better Auth
+allows 3 sign-ins per 10 seconds from one address.
