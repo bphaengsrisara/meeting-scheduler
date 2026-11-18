@@ -72,6 +72,53 @@ roles, and there is no screen to edit them.
 a working booking form. A real product would keep this list out of the
 migrations, for an admin to manage.
 
+## Sample data
+
+`pnpm --filter api db:seed` runs `api/src/db/seed.ts`. It makes the account
+`demo@example.com` with candidates and meetings in every state, dated from
+the day it runs, so the dashboard has pages to go through and History has
+feedback. Each run deletes that account and makes it again: two runs give
+the same data, and other accounts are not touched. It refuses to run when
+`NODE_ENV=production`.
+
+The positions are not part of it: the booking form needs them on every
+database, so a migration adds them (see [Positions](#positions)). The seed
+is only sample data.
+
+### Why TypeScript and not a SQL file
+
+The seed writes rows straight to the database rather than through the API,
+because the API refuses meetings in the past, and History needs some.
+Written in TypeScript:
+
+- The demo account is made by a real sign-up (`auth.api.signUpEmail`, the
+  same call behind `POST /api/auth/sign-up/email`): the same password rules
+  and the same Argon2id hash as any user. A SQL file would need a password
+  hash computed once and pasted in.
+- The rows go through Drizzle, like every other write in the app, and are
+  type-checked against the schema: a renamed column fails `tsc`. A SQL file
+  would only fail when it runs.
+- It does not depend on how Better Auth stores a login (its `account` row,
+  the `credential` provider); a SQL file would write those rows by hand.
+- Dates are relative to now in one small helper, so upcoming meetings stay
+  upcoming whenever it runs.
+
+What a SQL file would do better, and what this costs:
+
+- SQL reads as plain data and is shorter; the TypeScript has some plumbing
+  (the date helper, looking up ids by name, matching each meeting to its feedback). The meeting
+  list is kept one meeting a line, so it still reads as a table.
+- SQL needs only `psql`; the TypeScript needs the API's environment
+  (`api/.env`) to load, as the API itself does.
+- The project would then have two ways of writing data (hand-written SQL
+  for the migrations that Drizzle cannot express, and Drizzle elsewhere)
+  plus a third for the seed; TypeScript keeps it to the two.
+
+`api/src/db/seed.test.ts` runs the seed twice on a throwaway PostgreSQL
+(Testcontainers) and checks that the counts stay the same, that another
+account's data is untouched, and that every meeting status and every
+recommendation is there.
+
 ## Types
 
 - Times are `timestamptz`, stored in UTC; the web app shows local time.

@@ -43,9 +43,17 @@ docker compose up -d db              # PostgreSQL on localhost:5432
 cp api/.env.example api/.env
 cp web/.env.example web/.env
 pnpm --filter api db:migrate         # create the tables
+pnpm --filter api db:seed            # optional: a demo account with sample data
 pnpm --filter web dev   # http://localhost:3000
 pnpm --filter api dev   # http://localhost:3001/health
 ```
+
+The seed makes the account `demo@example.com` with the password
+`demo password for local use`: candidates and meetings in every status,
+dated from the day it runs, enough to page through the dashboard. Each run
+deletes that account and makes it again; other accounts are not touched. It
+refuses to run when `NODE_ENV=production`. Why it is written in TypeScript
+and not SQL is in [docs/database.md](docs/database.md#sample-data).
 
 The API reads `api/.env` if it exists; `api/.env.example` lists the
 variables. `DATABASE_URL`, `BETTER_AUTH_SECRET` and `API_SECRET` are
@@ -95,6 +103,7 @@ The routes, their query rules and the rules the API keeps are in
 | `src/positions/`   | The position list                                                                   |
 | `src/lib/`         | Logger, the HTTP error type, PostgreSQL error codes                                 |
 | `src/db/client.ts` | Connection pool (pg) and the Drizzle client                                         |
+| `src/db/seed.ts`   | Sample data for a demo account (`db:seed`)                                          |
 | `src/db/schema/`   | Table definitions: Better Auth's in `auth.ts`, the app's in `app.ts`                |
 | `drizzle/`         | SQL migrations written by drizzle-kit                                               |
 | `src/health.ts`    | `GET /health`, which also checks the database                                       |
