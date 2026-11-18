@@ -8,6 +8,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth.ts";
@@ -52,6 +53,9 @@ export const position = pgTable("position", {
   createdAt: createdAt(),
 });
 
+// Named, so the API can tell this refusal from others.
+export const CANDIDATE_EMAIL_UNIQUE = "candidate_owner_id_email_unique";
+
 export const candidate = pgTable(
   "candidate",
   {
@@ -60,6 +64,8 @@ export const candidate = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    // What tells apart two candidates with the same name.
+    email: text("email").notNull(),
     notes: text("notes"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -68,7 +74,10 @@ export const candidate = pgTable(
     // The target of meeting's (candidate_id, owner_id) foreign key.
     unique("candidate_id_owner_id_unique").on(t.id, t.ownerId),
     index("candidate_owner_id_name_idx").on(t.ownerId, t.name),
+    // One candidate per email in each account, whatever the letter case.
+    uniqueIndex(CANDIDATE_EMAIL_UNIQUE).on(t.ownerId, sql`lower(${t.email})`),
     check("candidate_name_not_blank", sql`char_length(trim(${t.name})) > 0`),
+    check("candidate_email_not_blank", sql`char_length(trim(${t.email})) > 0`),
   ],
 );
 

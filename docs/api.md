@@ -13,12 +13,12 @@ each form field.
 | Route                         | What                                                                                                               |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `GET /positions`              | The roles a meeting can be for                                                                                     |
-| `GET /candidates?q=`          | Up to 10 candidates whose name contains `q`, each with the position and start of their latest meeting              |
+| `GET /candidates?q=`          | Up to 10 candidates whose name or email contains `q`, each with the position and start of their latest meeting     |
 | `GET /candidates/:id`         | The candidate page: the candidate, `upcoming` meetings (earliest first) and `history` (newest first)               |
-| `PATCH /candidates/:id`       | Changes the candidate's `name` or `notes`                                                                          |
+| `PATCH /candidates/:id`       | Changes the candidate's `name` and `email`, or `notes`                                                             |
 | `GET /meetings`               | One page of meetings, earliest first; `page`, `pageSize`, `q` (candidate name), `status`, `position`, `from`, `to` |
 | `GET /meetings/:id`           | One meeting with its candidate, position and feedback                                                              |
-| `POST /meetings`              | Books a meeting for an existing candidate (`candidateId`) or a new one (`candidateName`)                           |
+| `POST /meetings`              | Books a meeting for an existing candidate (`candidateId`) or a new one (`candidateName`, `candidateEmail`)         |
 | `PATCH /meetings/:id`         | Changes a pending or confirmed meeting that has not started; its candidate cannot change                           |
 | `DELETE /meetings/:id`        | Deletes a pending or confirmed meeting that has not started                                                        |
 | `POST /meetings/:id/confirm`  | Pending → confirmed                                                                                                |
@@ -50,9 +50,14 @@ meeting that has started but is not marked completed stays in `upcoming`.
 - A meeting has at most one feedback, added once it is completed: a
   recommendation (strong no, no, yes, strong yes) and an optional comment.
   Saving again replaces it; only the latest version is kept.
+- Every candidate has an email, which tells apart two people with the same
+  name. One account cannot have two candidates with the same email, whatever
+  the letter case; the database refuses the second and the API answers 409.
+  Another account can have a candidate with that email.
 - When a guest signs up or logs in, their candidates and meetings move to the
-  account. If a moved meeting would overlap one of the account's, the login is
-  refused with 409 and they stay a guest, so they can change it and try again.
+  account. If a moved meeting would overlap one of the account's, or a moved
+  candidate's email is already one of the account's, the login is refused
+  with 409 and they stay a guest, so they can change it and try again.
 
 ## Meeting status
 

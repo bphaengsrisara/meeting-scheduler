@@ -29,7 +29,7 @@ type FeedbackFields = Pick<
   "recommendation" | "comment"
 >;
 export type NewMeeting = Required<MeetingFields> &
-  ({ candidateId: string } | { candidateName: string });
+  ({ candidateId: string } | { candidateName: string; candidateEmail: string });
 export type MeetingFilters = {
   from: Date;
   to?: Date;
@@ -132,7 +132,11 @@ export async function insertMeeting(ownerId: string, input: NewMeeting) {
     if ("candidateName" in input) {
       const [added] = await tx
         .insert(candidate)
-        .values({ ownerId, name: input.candidateName })
+        .values({
+          ownerId,
+          name: input.candidateName,
+          email: input.candidateEmail,
+        })
         .returning({ id: candidate.id });
       candidateId = added.id;
     } else {

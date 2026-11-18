@@ -17,10 +17,12 @@ import { useClosedWhenHidden } from "@/lib/use-closed-when-hidden";
 import { SEARCH_PAUSE_MS } from "./meeting-filters";
 import type { Position } from "./types";
 
-// A candidate from GET /candidates, or the typed name as a new one (no id).
+// A candidate from GET /candidates, or the typed name as a new one (no id
+// and no email yet).
 export type CandidateOption = {
   id: string;
   name: string;
+  email: string;
   latestPositionId: string | null;
   latestStartAt: string | null;
 };
@@ -85,24 +87,39 @@ export function CandidateField({
     items = typed
       ? [
           ...suggestions,
-          { id: "", name: typed, latestPositionId: null, latestStartAt: null },
+          {
+            id: "",
+            name: typed,
+            email: "",
+            latestPositionId: null,
+            latestStartAt: null,
+          },
         ]
       : suggestions;
   }
   // The box's text is always the value: an existing candidate (with id) or
   // a new name. With no value the combobox would empty the box on close.
   const selected = name
-    ? { id: candidateId, name, latestPositionId: null, latestStartAt: null }
+    ? {
+        id: candidateId,
+        name,
+        email: "",
+        latestPositionId: null,
+        latestStartAt: null,
+      }
     : null;
-  // The second line of a suggestion: what tells apart two people with the
-  // same name (a common pattern: a muted line under the name).
+  // The second line of a suggestion (a common pattern: a muted line under
+  // the name). The email comes first: it tells apart two people with the
+  // same name.
   const details = (candidate: CandidateOption) => {
     const role = positions.find(
       (position) => position.id === candidate.latestPositionId,
     )?.name;
-    if (!role || !candidate.latestStartAt) return "No meetings yet";
+    if (!role || !candidate.latestStartAt) {
+      return `${candidate.email} · No meetings yet`;
+    }
     const date = formatDate(new Date(candidate.latestStartAt), zone);
-    return `${role} · latest meeting ${date}`;
+    return `${candidate.email} · ${role} · latest meeting ${date}`;
   };
 
   return (

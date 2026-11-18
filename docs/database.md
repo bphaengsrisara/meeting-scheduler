@@ -55,6 +55,15 @@ database refuses it, and the API answers 400. With `on update cascade`, when
 a guest's candidates move to their account, their meetings follow in the
 same update.
 
+## One candidate per email
+
+Two candidates can share a name, so each has an email to tell them apart. A
+unique index on `(owner_id, lower(email))` keeps one candidate per email in
+each account, for every writer: `Jane@Example.com` and `jane@example.com`
+count as the same. The email is stored as typed. The index is per account,
+so two interviewers can each have the same person as a candidate. The API
+turns the refusal (23505) into a 409.
+
 ## Positions
 
 The positions are an admin's list: everyone books against the same open
@@ -68,7 +77,7 @@ migrations, for an admin to manage.
 - Times are `timestamptz`, stored in UTC; the web app shows local time.
 - Strings are `text`, with no length in the database: PostgreSQL's docs say
   `text` and `varchar(n)` perform the same. The limits (a name up to 100
-  characters, notes up to 2000) are in the Zod schemas.
+  characters, an email up to 254, notes up to 2000) are in the Zod schemas.
 
 ## References
 

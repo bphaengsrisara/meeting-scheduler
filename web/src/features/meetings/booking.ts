@@ -4,7 +4,16 @@ import type { Meeting } from "./types";
 
 // The API's limits (the same numbers as its schemas).
 export const NAME_MAX = 100;
+export const EMAIL_MAX = 254;
 export const NOTES_MAX = 2000;
+
+// A candidate's email, as the API checks it.
+export const candidateEmailSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter the candidate's email.")
+  .max(EMAIL_MAX, `Use ${EMAIL_MAX} characters or fewer.`)
+  .pipe(z.email("Enter a valid email address."));
 
 // The booking form's fields as typed. Date and times stay text ("2026-11-20",
 // "14:30") until they are sent; they are read in the user's time zone.
@@ -17,6 +26,8 @@ export const meetingFormSchema = z
       .trim()
       .min(1, "Enter the candidate's name.")
       .max(NAME_MAX, `Use ${NAME_MAX} characters or fewer.`),
+    // Only a new candidate has one to type; checked below.
+    candidateEmail: z.string().trim(),
     positionId: z.string().min(1, "Choose a position."),
     date: z.string().min(1, "Choose a date."),
     startTime: z.string().min(1, "Enter a start time."),
@@ -30,6 +41,16 @@ export const meetingFormSchema = z
       .max(NOTES_MAX, `Use ${NOTES_MAX} characters or fewer.`),
   })
   .superRefine((values, ctx) => {
+    if (!values.candidateId) {
+      const email = candidateEmailSchema.safeParse(values.candidateEmail);
+      if (!email.success) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["candidateEmail"],
+          message: email.error.issues[0].message,
+        });
+      }
+    }
     if (!values.type) {
       ctx.addIssue({
         code: "custom",
@@ -64,6 +85,7 @@ export type MeetingFormValues = z.output<typeof meetingFormSchema>;
 export const emptyMeetingForm: MeetingFormInput = {
   candidateId: "",
   candidateName: "",
+  candidateEmail: "",
   positionId: "",
   date: "",
   startTime: "",
@@ -83,6 +105,7 @@ export function meetingToForm(
   return {
     candidateId: meeting.candidate.id,
     candidateName: meeting.candidate.name,
+    candidateEmail: "",
     positionId: meeting.position.id,
     date: start.day,
     startTime: start.time,
@@ -118,11 +141,14 @@ export function toMeetingChanges(values: MeetingFormValues, zone: string) {
 }
 
 // What the API's POST /meetings takes: an existing candidate's id, or a new
-// candidate's name.
+// candidate's name and email.
 export function toNewMeeting(values: MeetingFormValues, zone: string) {
   const candidate = values.candidateId
     ? { candidateId: values.candidateId }
-    : { candidateName: values.candidateName };
+    : {
+        candidateName: values.candidateName,
+        candidateEmail: values.candidateEmail,
+      };
   return { ...toMeetingChanges(values, zone), ...candidate };
 }
 
@@ -172,6 +198,7 @@ export function overlapMessage(
 const FORM_FIELDS: Record<string, keyof MeetingFormInput> = {
   candidateId: "candidateName",
   candidateName: "candidateName",
+  candidateEmail: "candidateEmail",
   positionId: "positionId",
   startAt: "startTime",
   endAt: "endTime",

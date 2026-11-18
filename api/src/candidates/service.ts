@@ -24,12 +24,23 @@ export async function getCandidatePage(ownerId: string, id: string) {
   };
 }
 
+export const EMAIL_TAKEN_MESSAGE = "Another candidate already has this email.";
+
 export async function updateCandidate(
   ownerId: string,
   id: string,
   changes: UpdateCandidateBody,
 ) {
-  const candidate = await repository.updateCandidate(ownerId, id, changes);
+  const candidate = await repository
+    .updateCandidate(ownerId, id, changes)
+    .catch((err: unknown) => {
+      if (repository.isEmailTaken(err)) {
+        throw new HttpError(409, EMAIL_TAKEN_MESSAGE, {
+          email: [EMAIL_TAKEN_MESSAGE],
+        });
+      }
+      throw err;
+    });
   if (!candidate) {
     throw new HttpError(404, "Not found");
   }

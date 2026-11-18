@@ -10,7 +10,7 @@ const HOUR_MS = 60 * 60 * 1000;
 const STARTS_IN_MS = 3 * SECOND_MS;
 
 // A new guest each run: confirm, complete and review one meeting, cancel
-// another, and fix the name and notes, all from the candidate's page.
+// another, and fix the name, email and notes, all from the candidate's page.
 test("confirm, complete and add feedback on the candidate page", async ({
   page,
   request,
@@ -26,6 +26,7 @@ test("confirm, complete and add feedback on the candidate page", async ({
     meeting: { candidate: { id: string } };
   }>("/meetings", {
     candidateName: "Ana Lima",
+    candidateEmail: "ana.lima@example.com",
     positionId: positions[0].id,
     startAt: soon.toISOString(),
     endAt: new Date(soon.getTime() + HOUR_MS).toISOString(),
@@ -108,12 +109,22 @@ test("confirm, complete and add feedback on the candidate page", async ({
     page.getByText("No upcoming meetings with Ana Lima."),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "Edit Name" }).click();
+  // The email first, then the role of the latest meeting.
+  await expect(page.getByText(/^ana\.lima@example\.com · /)).toBeVisible();
+  await page.getByRole("button", { name: "Edit Details" }).click();
   await dialog.getByLabel("Full Name").fill("Ana Lima Souza");
-  await dialog.getByRole("button", { name: "Save Name" }).click();
+  await dialog.getByRole("textbox", { name: "Email" }).fill("ana.souza");
+  await dialog.getByRole("button", { name: "Save Details" }).click();
+  await expect(dialog.getByText("Enter a valid email address.")).toBeVisible();
+  await dialog
+    .getByRole("textbox", { name: "Email" })
+    .fill("ana.souza@example.com");
+  await dialog.getByRole("button", { name: "Save Details" }).click();
+  await expect(page.getByText("Details saved")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Ana Lima Souza" }),
   ).toBeVisible();
+  await expect(page.getByText("ana.souza@example.com")).toBeVisible();
 
   const notes = page.getByRole("textbox", { name: "Interview Notes" });
   await notes.fill("Strong on SQL.");

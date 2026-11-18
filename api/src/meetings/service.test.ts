@@ -36,6 +36,7 @@ const stored: Meeting = {
 
 const newBooking = {
   candidateName: "Jane Doe",
+  candidateEmail: "jane.doe@example.com",
   positionId: stored.position.id,
   startAt: hoursFromNow(24),
   endAt: hoursFromNow(25),
@@ -94,8 +95,24 @@ describe("createMeeting", () => {
 
     expect(repository.insertMeeting).toHaveBeenCalledWith(
       owner,
-      expect.objectContaining({ candidateName: "Jane Doe" }),
+      expect.objectContaining({
+        candidateName: "Jane Doe",
+        candidateEmail: "jane.doe@example.com",
+      }),
     );
+  });
+
+  it("answers 409 when the new candidate's email is already one of the user's", async () => {
+    vi.mocked(repository.insertMeeting).mockRejectedValue(
+      dbError("23505", "candidate_owner_id_email_unique"),
+    );
+
+    const error = await refusal(service.createMeeting(owner, newBooking, now));
+
+    expect(error.status).toBe(409);
+    expect(error.fields?.candidateEmail).toEqual([
+      service.NEW_EMAIL_TAKEN_MESSAGE,
+    ]);
   });
 
   it("refuses a start time that is not later than now", async () => {
@@ -158,6 +175,7 @@ describe("createMeeting", () => {
         {
           ...newBooking,
           candidateName: undefined,
+          candidateEmail: undefined,
           candidateId: stored.candidate.id,
         },
         now,

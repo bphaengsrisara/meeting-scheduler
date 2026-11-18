@@ -8,6 +8,7 @@ import {
   FOREIGN_KEY_VIOLATION,
   findPgError,
 } from "../lib/pg-error.ts";
+import { isEmailTaken } from "../candidates/repository.ts";
 import * as repository from "./repository.ts";
 import type { Meeting, MeetingStatus } from "./repository.ts";
 import type {
@@ -26,6 +27,8 @@ const STARTED_MESSAGE =
 const LOCKED_MESSAGE =
   "This meeting has started, or is completed or cancelled, so it can't be changed.";
 const START_IN_FUTURE_MESSAGE = "Start time must be later than now.";
+export const NEW_EMAIL_TAKEN_MESSAGE =
+  "A candidate with this email already exists. Pick them from the list instead.";
 
 // The only status moves; anything else is refused.
 const MOVES = {
@@ -95,12 +98,12 @@ export async function createMeeting(
   }
   throwIfAny(errors);
 
-  const { candidateId, candidateName, ...fields } = body;
-  // The schema lets exactly one of the two through.
+  const { candidateId, candidateName, candidateEmail, ...fields } = body;
+  // The schema lets through an id, or a name with its email.
   const candidate =
     candidateName === undefined
       ? { candidateId: String(candidateId) }
-      : { candidateName };
+      : { candidateName, candidateEmail: String(candidateEmail) };
   const id = await refuseConflicts(() =>
     repository.insertMeeting(ownerId, { ...fields, ...candidate }),
   );
@@ -239,6 +242,12 @@ async function refuseConflicts<T>(write: () => Promise<T>) {
     // Another meeting was booked at this time since the form loaded its list.
     if (pgError?.code === EXCLUSION_VIOLATION) {
       throw new HttpError(409, OVERLAP_MESSAGE, { startAt: [OVERLAP_MESSAGE] });
+    }
+    // The new candidate's email is already one of the user's candidates.
+    if (isEmailTaken(err)) {
+      throw new HttpError(409, NEW_EMAIL_TAKEN_MESSAGE, {
+        candidateEmail: [NEW_EMAIL_TAKEN_MESSAGE],
+      });
     }
     // The candidate or position does not exist, or the candidate belongs to
     // another user (meeting's foreign key to candidate (id, owner_id)).

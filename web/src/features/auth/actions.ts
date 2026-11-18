@@ -11,7 +11,11 @@ import {
 } from "./schemas";
 
 export type AuthError =
-  "invalid-credentials" | "email-taken" | "guest-overlap" | "unknown";
+  | "invalid-credentials"
+  | "email-taken"
+  | "guest-overlap"
+  | "guest-emails-taken"
+  | "unknown";
 
 const postJson = (path: string, body: unknown) =>
   callApi(path, {
@@ -28,8 +32,13 @@ export async function login(input: LoginInput): Promise<AuthError> {
   const response = await postJson("/api/auth/sign-in/email", parsed.data);
   if (!response.ok) {
     if (response.status === 401) return "invalid-credentials";
-    // A guest whose meetings overlap the account's: the API kept them a guest.
-    return response.status === 409 ? "guest-overlap" : "unknown";
+    if (response.status !== 409) return "unknown";
+    // The API kept a guest a guest: their meetings overlap the account's, or
+    // their candidates' emails are already the account's.
+    const { code } = (await response.json()) as { code?: string };
+    return code === "GUEST_EMAILS_TAKEN"
+      ? "guest-emails-taken"
+      : "guest-overlap";
   }
   await copyApiCookies(response);
   redirect("/");

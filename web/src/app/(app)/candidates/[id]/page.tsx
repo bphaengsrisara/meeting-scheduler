@@ -6,7 +6,7 @@ import Loading from "@/app/(app)/loading";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCandidatePage } from "@/features/candidates/api";
-import { EditNameButton } from "@/features/candidates/edit-name-button";
+import { EditDetailsButton } from "@/features/candidates/edit-details-button";
 import { InterviewNotes } from "@/features/candidates/interview-notes";
 import { latestMeeting } from "@/features/candidates/latest-meeting";
 import { HistoryRow, UpcomingRow } from "@/features/candidates/meeting-rows";
@@ -56,9 +56,16 @@ async function CandidateDetails({
             <h1 className="text-2xl font-semibold break-words">
               {candidate.name}
             </h1>
-            <EditNameButton candidateId={candidate.id} name={candidate.name} />
+            <EditDetailsButton
+              candidateId={candidate.id}
+              name={candidate.name}
+              email={candidate.email}
+            />
           </div>
-          {role && <p className="text-muted-foreground">{role}</p>}
+          {/* The email first, as in the booking form's list. */}
+          <p className="break-words text-muted-foreground">
+            {[candidate.email, role].filter(Boolean).join(" · ")}
+          </p>
         </div>
         <Link
           href={bookHref}

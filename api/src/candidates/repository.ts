@@ -1,15 +1,30 @@
-import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { db } from "../db/client.ts";
-import { candidate, meeting } from "../db/schema/app.ts";
+import {
+  candidate,
+  CANDIDATE_EMAIL_UNIQUE,
+  meeting,
+} from "../db/schema/app.ts";
 import { containsPattern } from "../lib/like.ts";
+import { findPgError, UNIQUE_VIOLATION } from "../lib/pg-error.ts";
 import type { UpdateCandidateBody } from "./schemas.ts";
 
 const SUGGESTIONS = 10;
 
-// The booking form's autocomplete. Each candidate comes with the position
-// and start of their latest meeting: the form picks that position for the
-// new booking, and the date tells apart two candidates with the same name.
+// The database refused a write because the account already has a candidate
+// with this email.
+export function isEmailTaken(err: unknown) {
+  const pgError = findPgError(err);
+  return (
+    pgError?.code === UNIQUE_VIOLATION &&
+    pgError.constraint === CANDIDATE_EMAIL_UNIQUE
+  );
+}
+
+// The booking form's autocomplete, matching the name or the email. Each
+// candidate comes with the position and start of their latest meeting: the
+// form picks that position for the new booking.
 export function searchCandidates(ownerId: string, q: string) {
   // One column of the candidate's latest meeting, read as that column's
   // type (mapWith), so the start comes back as a Date.
@@ -25,6 +40,7 @@ export function searchCandidates(ownerId: string, q: string) {
     .select({
       id: candidate.id,
       name: candidate.name,
+      email: candidate.email,
       latestPositionId: latest(meeting.positionId),
       latestStartAt: latest(meeting.startAt),
     })
@@ -32,7 +48,12 @@ export function searchCandidates(ownerId: string, q: string) {
     .where(
       and(
         eq(candidate.ownerId, ownerId),
-        q ? ilike(candidate.name, containsPattern(q)) : undefined,
+        q
+          ? or(
+              ilike(candidate.name, containsPattern(q)),
+              ilike(candidate.email, containsPattern(q)),
+            )
+          : undefined,
       ),
     )
     .orderBy(asc(candidate.name))
@@ -42,9 +63,15 @@ export function searchCandidates(ownerId: string, q: string) {
 const candidateFields = {
   id: candidate.id,
   name: candidate.name,
+  email: candidate.email,
   notes: candidate.notes,
 };
-type Candidate = { id: string; name: string; notes: string | null };
+type Candidate = {
+  id: string;
+  name: string;
+  email: string;
+  notes: string | null;
+};
 const ownedBy = (ownerId: string, id: string) =>
   and(eq(candidate.id, id), eq(candidate.ownerId, ownerId));
 

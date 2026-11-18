@@ -1,6 +1,7 @@
 // PostgreSQL error codes the API turns into answers for the user.
 export const EXCLUSION_VIOLATION = "23P01";
 export const FOREIGN_KEY_VIOLATION = "23503";
+export const UNIQUE_VIOLATION = "23505";
 
 type PgError = { code: string; constraint?: string };
 

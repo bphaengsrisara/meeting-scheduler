@@ -38,6 +38,7 @@ test("filter by status and page through the meetings", async ({
       "/meetings",
       {
         candidateName: `Candidate ${String(i + 1).padStart(2, "0")}`,
+        candidateEmail: `candidate-${i + 1}@example.com`,
         positionId: positions[0].id,
         startAt: start.toISOString(),
         endAt: new Date(start.getTime() + MEETING_MS).toISOString(),

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  candidateEmail,
   candidateName,
   NAME_MAX,
   optionalText,
@@ -27,7 +28,7 @@ const meetingFields = {
   notes: optionalText,
 };
 
-// Either an existing candidate's id or a new candidate's name.
+// Either an existing candidate's id or a new candidate's name and email.
 export const createMeetingBody = z
   .object({
     ...meetingFields,
@@ -35,11 +36,17 @@ export const createMeetingBody = z
     notes: optionalText.default(null),
     candidateId: z.uuid().optional(),
     candidateName: candidateName.optional(),
+    candidateEmail: candidateEmail.optional(),
   })
   .refine(
     (body) =>
       (body.candidateId === undefined) !== (body.candidateName === undefined),
     { message: "Pick a candidate or add a new one.", path: ["candidateName"] },
+  )
+  .refine(
+    (body) =>
+      body.candidateName === undefined || body.candidateEmail !== undefined,
+    { message: "Enter the candidate's email.", path: ["candidateEmail"] },
   );
 
 // The candidate of a meeting cannot change; only these fields can.

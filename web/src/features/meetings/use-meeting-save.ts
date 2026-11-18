@@ -64,7 +64,12 @@ export function useMeetingSave({
       return;
     }
     const errors = toFormErrors(result.fields);
-    if (result.status === 400 && errors.length > 0) {
+    // 400: a field is wrong. 409 on the email: the new candidate's email is
+    // already one of the user's candidates.
+    const fieldRefusal =
+      result.status === 400 ||
+      (result.status === 409 && result.fields?.candidateEmail);
+    if (fieldRefusal && errors.length > 0) {
       for (const [index, { name, message }] of errors.entries()) {
         form.setError(name, { message }, { shouldFocus: index === 0 });
       }

@@ -12,11 +12,18 @@ function tomorrow() {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-async function fillMeeting(page: Page, name: string, start: string) {
+async function fillMeeting(
+  page: Page,
+  name: string,
+  email: string,
+  start: string,
+) {
   await page.getByRole("combobox", { name: "Candidate Name" }).fill(name);
   await page
     .getByRole("option", { name: `Add “${name}” as a New Candidate` })
     .click();
+  // A role query: the login page Next.js keeps hidden has an Email box too.
+  await page.getByRole("textbox", { name: "Email" }).fill(email);
   await page.getByRole("combobox", { name: "Position" }).click();
   await page.getByRole("option", { name: "QA Engineer", exact: true }).click();
   await page.getByLabel("Date", { exact: true }).fill(tomorrow());
@@ -38,7 +45,7 @@ test("book, edit and delete a meeting", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Schedule a New Meeting" }),
   ).toBeVisible();
-  await fillMeeting(page, "Jan Novak", "10:00");
+  await fillMeeting(page, "Jan Novak", "jan.novak@example.com", "10:00");
   await expect(page.getByLabel("End Time", { exact: true })).toHaveValue(
     "11:00",
   );
@@ -46,21 +53,33 @@ test("book, edit and delete a meeting", async ({ page }) => {
   await expect(page.getByText("Meeting booked")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Jan Novak" })).toBeVisible();
 
-  // Another person with the same name, at the same hour: the name can still
-  // be added as a new candidate, and the form marks the overlap and sends
-  // nothing.
+  // Another person with the same name, at the same hour: the list tells the
+  // first one apart by email, the name can still be added as a new
+  // candidate, and the form marks the overlap and sends nothing.
   await page.goto("/meetings/new");
   await page
     .getByRole("combobox", { name: "Candidate Name" })
     .fill("Jan Novak");
   await expect(
-    page.getByRole("option", { name: /^Jan Novak.*latest meeting/ }),
+    page.getByRole("option", {
+      name: /^Jan Novak.*jan\.novak@example\.com · QA Engineer · latest meeting/,
+    }),
   ).toBeVisible();
-  await fillMeeting(page, "Jan Novak", "10:30");
+  await fillMeeting(page, "Jan Novak", "jan.novak@example.com", "10:30");
   await expect(page.getByText("Overlaps", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Book Meeting" }).click();
   await expect(
     page.getByText("This time overlaps your meeting with Jan Novak"),
+  ).toBeVisible();
+
+  // A free time, but the first Jan Novak's email: the API refuses a second
+  // candidate with it.
+  await page.getByLabel("Start Time", { exact: true }).fill("14:00");
+  await page.getByRole("button", { name: "Book Meeting" }).click();
+  await expect(
+    page.getByText(
+      "A candidate with this email already exists. Pick them from the list instead.",
+    ),
   ).toBeVisible();
 
   // The edit form is reached from the candidate's page, and Back returns
@@ -97,7 +116,7 @@ test("a time booked meanwhile is refused and the day reloads", async ({
   await expect(page.getByText("No Upcoming Meetings")).toBeVisible();
 
   await page.getByRole("link", { name: "Book Meeting" }).first().click();
-  await fillMeeting(page, "Jan Novak", "10:00");
+  await fillMeeting(page, "Jan Novak", "jan.novak@example.com", "10:00");
   await expect(page.getByText("No other meetings on this day.")).toBeVisible();
 
   const api = await apiAs(page.context(), request);
@@ -107,6 +126,7 @@ test("a time booked meanwhile is refused and the day reloads", async ({
   const start = new Date(`${tomorrow()}T10:00`);
   await api.post("/meetings", {
     candidateName: "Booked Elsewhere",
+    candidateEmail: "booked.elsewhere@example.com",
     positionId: positions[0].id,
     startAt: start.toISOString(),
     endAt: new Date(start.getTime() + HOUR_MS).toISOString(),

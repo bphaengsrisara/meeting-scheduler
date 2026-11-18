@@ -214,6 +214,8 @@ function MeetingFields({
                   }}
                   onPick={(candidate) => {
                     form.setValue("candidateId", candidate.id);
+                    // An existing candidate already has an email.
+                    if (candidate.id) form.setValue("candidateEmail", "");
                     form.setValue("candidateName", candidate.name, {
                       shouldDirty: true,
                       shouldValidate: fieldState.invalid,
@@ -228,6 +230,29 @@ function MeetingFields({
                       },
                     );
                   }}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        )}
+        {/* Only a new candidate needs one; an existing one has theirs. */}
+        {!lockedName && !candidateId && candidateName.trim() && (
+          <Controller
+            name="candidateEmail"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="candidate-email">Email</FieldLabel>
+                <Input
+                  {...field}
+                  id="candidate-email"
+                  type="email"
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-invalid={fieldState.invalid}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

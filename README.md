@@ -91,7 +91,7 @@ The routes, their query rules and the rules the API keeps are in
 | `src/middleware/`  | API secret check, rate limit, session check, Zod validation, 404 and error handlers |
 | `src/auth/`        | Better Auth setup (`/api/auth/*`), Argon2id hashing, the hook that moves guest data |
 | `src/meetings/`    | Meeting routes, rules (`service.ts`), queries (`repository.ts`), Zod schemas        |
-| `src/candidates/`  | Candidate search, the candidate page's data, name and notes changes                 |
+| `src/candidates/`  | Candidate search, the candidate page's data, name, email and notes changes          |
 | `src/positions/`   | The position list                                                                   |
 | `src/lib/`         | Logger, the HTTP error type, PostgreSQL error codes                                 |
 | `src/db/client.ts` | Connection pool (pg) and the Drizzle client                                         |
@@ -106,7 +106,7 @@ The routes, their query rules and the rules the API keeps are in
 | `src/app/`                 | Routes (Next.js App Router): `(auth)/` for login and sign-up, `(app)/` for signed-in pages with the header                                                                               |
 | `src/features/auth/`       | Login and sign-up forms, their Zod rules, the Server Actions that call the API, logout, the guest notice; a signed-in user (not a guest) is sent from login and sign-up to the dashboard |
 | `src/features/meetings/`   | The Upcoming Meetings page's parts (cards, filters, pages, empty states, the URL ↔ API query) and the booking form (its rules in `booking.ts`, its Server Actions in `actions.ts`)       |
-| `src/features/candidates/` | The candidate page's parts: meeting rows, status buttons, interview notes, the Edit Name and feedback dialogs, and their Server Actions                                                  |
+| `src/features/candidates/` | The candidate page's parts: meeting rows, status buttons, interview notes, the Edit Details and feedback dialogs, and their Server Actions                                               |
 | `src/app/api/`             | Two GET Route Handlers the booking form calls from the browser: candidate suggestions and the day's meetings. Saving goes through Server Actions                                         |
 | `src/lib/dates.ts`         | The date and time formats, in the user's time zone (date-fns with @date-fns/tz)                                                                                                          |
 | `src/lib/time-zone*`       | The browser puts its time zone in a cookie; the server reads it to show local times                                                                                                      |

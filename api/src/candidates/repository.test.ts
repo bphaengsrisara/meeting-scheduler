@@ -9,7 +9,7 @@ import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { candidate, meeting, position } from "../db/schema/app.ts";
 import { user } from "../db/schema/auth.ts";
-import { searchCandidates } from "./repository.ts";
+import { isEmailTaken, searchCandidates } from "./repository.ts";
 
 // The search runs its SQL on a throwaway PostgreSQL in Docker, which the
 // repository gets in place of the compose database's client.
@@ -48,8 +48,12 @@ describe("searchCandidates", () => {
     const [first, second] = await db
       .insert(candidate)
       .values([
-        { ownerId: owner.id, name: "Lucas Martin" },
-        { ownerId: owner.id, name: "Lucas Martin" },
+        { ownerId: owner.id, name: "Lucas Martin", email: "lucas@example.com" },
+        {
+          ownerId: owner.id,
+          name: "Lucas Martin",
+          email: "lmartin@example.org",
+        },
       ])
       .returning();
     const [qa, backend] = await db.select().from(position).limit(2);
@@ -78,6 +82,7 @@ describe("searchCandidates", () => {
     expect(found).toContainEqual({
       id: first.id,
       name: "Lucas Martin",
+      email: "lucas@example.com",
       latestPositionId: backend.id,
       latestStartAt: new Date("2026-12-08T03:00:00Z"),
     });
@@ -85,8 +90,48 @@ describe("searchCandidates", () => {
     expect(found).toContainEqual({
       id: second.id,
       name: "Lucas Martin",
+      email: "lmartin@example.org",
       latestPositionId: null,
       latestStartAt: null,
     });
+  });
+
+  it("also finds a candidate by email", async () => {
+    const [owner] = await db
+      .insert(user)
+      .values({ name: "Interviewer", email: "search@example.com" })
+      .returning();
+    await db.insert(candidate).values({
+      ownerId: owner.id,
+      name: "Somchai K.",
+      email: "somchai.k@example.com",
+    });
+
+    const found = await searchCandidates(owner.id, "SOMCHAI.K@");
+
+    expect(found.map((c) => c.name)).toEqual(["Somchai K."]);
+  });
+});
+
+describe("one candidate per email in each account", () => {
+  it("refuses the same email in one account, whatever the case, but not in another", async () => {
+    const [first, second] = await db
+      .insert(user)
+      .values([
+        { name: "First", email: "first@example.com" },
+        { name: "Second", email: "second@example.com" },
+      ])
+      .returning();
+    const add = (ownerId: string, email: string) =>
+      db.insert(candidate).values({ ownerId, name: "Jane Doe", email });
+    await add(first.id, "jane.doe@example.com");
+
+    const sameAccount = await add(first.id, "Jane.Doe@Example.com").catch(
+      (err: unknown) => err,
+    );
+    const otherAccount = add(second.id, "jane.doe@example.com");
+
+    expect(isEmailTaken(sameAccount)).toBe(true);
+    await expect(otherAccount).resolves.toBeDefined();
   });
 });

@@ -19,6 +19,7 @@ const ZONE = "Asia/Bangkok";
 const filled: MeetingFormInput = {
   candidateId: "",
   candidateName: "Jan Novak",
+  candidateEmail: "jan.novak@example.com",
   positionId: "position-1",
   date: "2026-11-20",
   startTime: "10:00",
@@ -45,6 +46,7 @@ describe("meetingFormSchema", () => {
   it("asks for every required field", () => {
     expect(messages(emptyMeetingForm)).toEqual({
       candidateName: "Enter the candidate's name.",
+      candidateEmail: "Enter the candidate's email.",
       positionId: "Choose a position.",
       date: "Choose a date.",
       startTime: "Enter a start time.",
@@ -68,6 +70,15 @@ describe("meetingFormSchema", () => {
     });
   });
 
+  it("asks a new candidate for a valid email, and an existing one for none", () => {
+    expect(messages({ ...filled, candidateEmail: "jan.novak" })).toEqual({
+      candidateEmail: "Enter a valid email address.",
+    });
+    expect(
+      messages({ ...filled, candidateId: "candidate-1", candidateEmail: "" }),
+    ).toEqual({});
+  });
+
   it("keeps the API's name limit", () => {
     expect(
       messages({ ...filled, candidateName: "a".repeat(NAME_MAX + 1) }),
@@ -78,9 +89,10 @@ describe("meetingFormSchema", () => {
 describe("what the form sends", () => {
   const values = meetingFormSchema.parse(filled);
 
-  it("sends the times in UTC and a new candidate by name", () => {
+  it("sends the times in UTC and a new candidate by name and email", () => {
     expect(toNewMeeting(values, ZONE)).toEqual({
       candidateName: "Jan Novak",
+      candidateEmail: "jan.novak@example.com",
       positionId: "position-1",
       startAt: "2026-11-20T03:00:00.000Z",
       endAt: "2026-11-20T04:00:00.000Z",
@@ -94,6 +106,7 @@ describe("what the form sends", () => {
     const body = toNewMeeting({ ...values, candidateId: "candidate-1" }, ZONE);
     expect(body).toMatchObject({ candidateId: "candidate-1" });
     expect(body).not.toHaveProperty("candidateName");
+    expect(body).not.toHaveProperty("candidateEmail");
   });
 
   it("sends no platform for an onsite meeting", () => {
@@ -119,6 +132,7 @@ describe("meetingToForm", () => {
     expect(meetingToForm(meeting, ZONE)).toEqual({
       candidateId: "candidate-1",
       candidateName: "Jane Doe",
+      candidateEmail: "",
       positionId: "position-1",
       date: "2026-11-20",
       startTime: "10:00",

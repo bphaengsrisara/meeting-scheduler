@@ -6,7 +6,8 @@ import * as repository from "./repository.ts";
 import * as service from "./service.ts";
 
 // The database is mocked: these tests cover the service's rules only.
-vi.mock("./repository.ts", () => ({
+vi.mock("./repository.ts", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./repository.ts")>()),
   findCandidate: vi.fn(),
   updateCandidate: vi.fn(),
 }));
@@ -19,6 +20,7 @@ const owner = "01a1ec1c-0000-7000-8000-000000000001";
 const stored = {
   id: "01a1ec1c-0000-7000-8000-000000000003",
   name: "Jane Doe",
+  email: "jane.doe@example.com",
   notes: null,
 };
 
@@ -90,6 +92,27 @@ describe("updateCandidate", () => {
     });
 
     expect(result).toEqual(renamed);
+  });
+
+  it("answers 409 when another of the user's candidates has the email", async () => {
+    vi.mocked(repository.updateCandidate).mockRejectedValue(
+      new Error("Failed query", {
+        cause: Object.assign(new Error(), {
+          code: "23505",
+          constraint: "candidate_owner_id_email_unique",
+        }),
+      }),
+    );
+
+    const error = await refusal(
+      service.updateCandidate(owner, stored.id, {
+        name: "Jane Doe",
+        email: "taken@example.com",
+      }),
+    );
+
+    expect(error.status).toBe(409);
+    expect(error.fields?.email).toEqual([service.EMAIL_TAKEN_MESSAGE]);
   });
 
   it("answers 404 when none of the user's candidates matched", async () => {

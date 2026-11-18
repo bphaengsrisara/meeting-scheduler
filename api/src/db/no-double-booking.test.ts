@@ -39,7 +39,11 @@ describe("no double booking", () => {
       .returning();
     const [jane] = await db
       .insert(candidate)
-      .values({ ownerId: owner.id, name: "Jane Doe" })
+      .values({
+        ownerId: owner.id,
+        name: "Jane Doe",
+        email: "jane.doe@example.com",
+      })
       .returning();
     const [role] = await db.select().from(position).limit(1);
 
@@ -71,7 +75,11 @@ describe("no double booking", () => {
       .returning();
     const [jane] = await db
       .insert(candidate)
-      .values({ ownerId: owner.id, name: "Jane Doe" })
+      .values({
+        ownerId: owner.id,
+        name: "Jane Doe",
+        email: "jane.doe@example.com",
+      })
       .returning();
     const [role] = await db.select().from(position).limit(1);
     const at = (startAt: string, endAt: string) => ({
