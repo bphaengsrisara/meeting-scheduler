@@ -1,0 +1,15 @@
+# The images are built from the repository root (the pnpm workspace files are
+# here). Only what they need goes into the build context.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!api/
+!web/
+
+**/node_modules
+**/.next
+**/.env
+**/*.tsbuildinfo
+web/test-results
+web/playwright-report

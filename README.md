@@ -29,7 +29,8 @@ candidates and meetings, including the candidate page's data and feedback.
 | `api/`  | Backend: Express 5, TypeScript, run directly by Node.js |
 | `docs/` | Requirements, authentication, API routes, database      |
 
-`compose.yaml` runs PostgreSQL 18 for local work.
+`compose.yaml` runs PostgreSQL 18 for local work. Each app has a Dockerfile;
+see [Docker images](#docker-images).
 
 The two apps share one pnpm workspace.
 
@@ -155,3 +156,19 @@ formatting problem makes `pnpm lint` fail; `pnpm lint:fix` fixes it. Each
 root script names the apps it runs in, so an app that is missing the script
 makes the command fail instead of being skipped. Both apps' ESLint configs
 add typescript-eslint's strict rules and SonarJS.
+
+## Docker images
+
+Each app has a Dockerfile, built from the repository root because the pnpm
+workspace files are there:
+
+```bash
+docker build -f api/Dockerfile -t meeting-scheduler-api .
+docker build -f web/Dockerfile -t meeting-scheduler-web .
+```
+
+The API image holds only production dependencies. It applies the database
+migrations (`api/src/db/migrate.ts`) before the server starts, so a new
+image needs no separate migration step. The web image uses Next.js's
+standalone output. Neither image contains a `.env` file; the environment
+variables come from the host when the container runs.
