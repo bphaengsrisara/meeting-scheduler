@@ -21,6 +21,8 @@ const messages: Record<AuthError, string> = {
   "invalid-credentials":
     "Email or password is incorrect. Check both and try again.",
   "email-taken": "An account with this email already exists.",
+  "guest-overlap":
+    "Some of your guest meetings overlap meetings in this account. Change or cancel them, then log in again.",
   unknown: "Something went wrong. Try again.",
 };
 
