@@ -3,6 +3,11 @@
 A small web app for scheduling candidate interview meetings: create, list,
 edit and delete meetings.
 
+**Live demo:** https://meeting-scheduler-demo-web-mpt5.onrender.com (free
+hosting: the first visit after a quiet period takes about a minute to wake).
+Log in as `demo@example.com` with the password given in
+[Run locally](#run-locally), or continue as a guest.
+
 The requirements are in [docs/requirements.md](docs/requirements.md). How
 sign-up, login and password hashing work is in [docs/auth.md](docs/auth.md). The
 design (desktop and mobile screens, components and the screen flow) is in
