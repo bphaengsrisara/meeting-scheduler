@@ -3,7 +3,7 @@
 A small web app for scheduling candidate interview meetings: create, list,
 edit and delete meetings.
 
-**Live demo:** https://meeting-scheduler-demo-web-mpt5.onrender.com (free
+**Live demo:** <https://meeting-scheduler-demo-web-mpt5.onrender.com> (free
 hosting: the first visit after a quiet period takes about a minute to wake).
 Log in as `demo@example.com` with the password given in
 [Run locally](#run-locally), or continue as a guest.
@@ -15,7 +15,7 @@ design (desktop and mobile screens, components and the screen flow) is in
 
 ## Status
 
-Work in progress. The web app has login, sign-up and "Continue as Guest",
+Done. The web app has login, sign-up and "Continue as Guest",
 the Upcoming Meetings page: the user's meetings as cards, with search,
 filters (status, position, dates) and pages, all kept in the URL, and the
 booking form to book, edit and delete a meeting. The form lists the user's
@@ -180,7 +180,7 @@ standalone output. Neither image contains a `.env` file; the environment
 variables come from the host when the container runs.
 
 `docker compose up --build` runs both images with the database: the web app
-on http://localhost:3000 and the API on http://localhost:3001, with the
+on <http://localhost:3000> and the API on <http://localhost:3001>, with the
 `.env.example` values. The API runs in production mode there, so Better Auth
 allows 3 sign-ins per 10 seconds from one address.
 

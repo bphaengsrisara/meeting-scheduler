@@ -79,11 +79,9 @@ refuses any other move.
   automatically: a meeting can run late. A meeting completed before its booked end
   frees the rest of that time for another booking; its booked times stay as
   they were (see [database.md](database.md#no-double-booking)).
-- Cancelled is final. A wrong cancel is fixed by booking again, as in
-  scheduling products: [Cal.com](https://cal.com/help/bookings/manage-a-booking.md)
-  has no way to bring back a cancelled booking, and the
-  [Google Calendar API](https://developers.google.com/workspace/calendar/api/v3/reference/events)
-  keeps a cancelled event with the status "cancelled".
+- Cancelled is final; a wrong cancel is fixed by booking again.
+  [Cal.com](https://cal.com/help/bookings/manage-a-booking.md) does not let a
+  cancelled booking be edited either.
 - Completed and cancelled meetings, and meetings that have started, are a
   record: they cannot be edited or deleted. Hiring records are kept in case a decision is challenged: the US
   EEOC rule

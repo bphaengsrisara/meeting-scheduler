@@ -10,8 +10,8 @@ import {
 } from "lucide-react";
 
 // Changed from shadcn's file: no next-themes. This app has no dark mode, and
-// without a theme provider useTheme() gives "system", so a dark-mode computer
-// got a dark toast. Sonner's own default theme is light.
+// without a theme provider shadcn's file falls back to "system", so a
+// dark-mode computer got a dark toast. Sonner's own default theme is light.
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner

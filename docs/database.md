@@ -26,9 +26,9 @@ WHERE (status IN ('pending', 'confirmed'))
 
 - `tstzrange(start_at, end_at)` includes the start and leaves out the end,
   and `&&` asks whether two ranges have any moment in common. So a meeting
-  that ends at 10:00 and one that starts at 10:00 do not overlap. Scheduling
-  products allow back-to-back meetings too; a gap between them is an
-  optional buffer setting, which this app does not have.
+  that ends at 10:00 and one that starts at 10:00 do not overlap. Google
+  Calendar's appointment schedules allow back-to-back meetings too; a gap
+  between them is an optional buffer setting, which this app does not have.
 - `btree_gist`, supplied with PostgreSQL, lets the same index compare
   `owner_id` with `=`.
 - Drizzle cannot declare an exclusion constraint, so this is a hand-written
@@ -38,10 +38,10 @@ WHERE (status IN ('pending', 'confirmed'))
   It also checks that a completed meeting does not block a new one.
 - A completed meeting keeps its booked start and end, even when it finished
   early. The moment someone marks it completed is not the real end (it can
-  be pressed during the meeting or hours later), and calendar standards
-  keep the booked times too, with no "actual end" field. So History can show
-  two meetings whose booked times overlap: the second was booked after the
-  first had finished.
+  be pressed during the meeting or hours later), and the iCalendar
+  standard (RFC 5545) keeps the booked times too, with no "actual end"
+  field. So History can show two meetings whose booked times overlap: the
+  second was booked after the first had finished.
 
 ## The owner is stored twice, and kept equal
 
@@ -123,7 +123,8 @@ recommendation is there.
 
 - Times are `timestamptz`, stored in UTC; the web app shows local time.
 - Strings are `text`, with no length in the database: PostgreSQL's docs say
-  `text` and `varchar(n)` perform the same. The limits (a name up to 100
+  `text` and `varchar(n)` have no performance difference, apart from the
+  length check. The limits (a name up to 100
   characters, an email up to 254, notes up to 2000) are in the Zod schemas.
 
 ## References
@@ -140,3 +141,6 @@ recommendation is there.
 - Google Calendar Help:
   [appointment schedules](https://support.google.com/calendar/answer/11423292?hl=en)
   (buffer time)
+- iCalendar:
+  [RFC 5545, section 3.6.1](https://www.rfc-editor.org/rfc/rfc5545.html#section-3.6.1)
+  (an event's properties: a start, and an end or a duration)

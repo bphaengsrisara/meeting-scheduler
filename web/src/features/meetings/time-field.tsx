@@ -12,7 +12,7 @@ import type { MeetingFormInput, MeetingFormValues } from "./booking";
 
 // The browser's own time box (typed: hours, minutes, arrow keys), with the
 // clock on the left as in the design. The browser's time pop-up is hidden,
-// as in shadcn's own time picker example: it cannot be styled.
+// as in shadcn's own time picker example.
 export function TimeField({
   name,
   label,

@@ -43,8 +43,8 @@ existing hashes are still checked with the values stored in them.
 ## Better Auth's tables
 
 Better Auth requires four tables, `user`, `session`, `account` and
-`verification`, and checks at startup that the schema has the columns it uses;
-their names can be changed
+`verification`, and checks when it is first used that the schema has the
+columns it uses; their names can be changed
 ([Database](https://www.better-auth.com/docs/concepts/database)). With the
 Drizzle adapter it does not create them itself: its CLI writes them as a
 Drizzle schema, and drizzle-kit turns that into a migration. The default names
