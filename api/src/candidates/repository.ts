@@ -1,25 +1,31 @@
 import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { db } from "../db/client.ts";
 import { candidate, meeting } from "../db/schema/app.ts";
 import { containsPattern } from "../lib/like.ts";
 
 const SUGGESTIONS = 10;
 
-// The booking form's autocomplete. Each candidate comes with the position of
-// their latest meeting, which the form picks for the new booking.
+// The booking form's autocomplete. Each candidate comes with the position
+// and start of their latest meeting: the form picks that position for the
+// new booking, and the date tells apart two candidates with the same name.
 export function searchCandidates(ownerId: string, q: string) {
-  const latestPositionId = db
-    .select({ positionId: meeting.positionId })
-    .from(meeting)
-    .where(eq(meeting.candidateId, candidate.id))
-    .orderBy(desc(meeting.startAt))
-    .limit(1);
+  // One column of the candidate's latest meeting, read as that column's
+  // type (mapWith), so the start comes back as a Date.
+  const latest = <T extends AnyPgColumn>(column: T) =>
+    sql<T["_"]["data"] | null>`(${db
+      .select({ value: column })
+      .from(meeting)
+      .where(eq(meeting.candidateId, candidate.id))
+      .orderBy(desc(meeting.startAt))
+      .limit(1)})`.mapWith(column);
 
   return db
     .select({
       id: candidate.id,
       name: candidate.name,
-      latestPositionId: sql<string | null>`(${latestPositionId})`,
+      latestPositionId: latest(meeting.positionId),
+      latestStartAt: latest(meeting.startAt),
     })
     .from(candidate)
     .where(

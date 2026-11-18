@@ -13,7 +13,7 @@ each form field.
 | Route                         | What                                                                                                               |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `GET /positions`              | The roles a meeting can be for                                                                                     |
-| `GET /candidates?q=`          | Up to 10 candidates whose name contains `q`, each with the position of their latest meeting                        |
+| `GET /candidates?q=`          | Up to 10 candidates whose name contains `q`, each with the position and start of their latest meeting              |
 | `GET /meetings`               | One page of meetings, earliest first; `page`, `pageSize`, `q` (candidate name), `status`, `position`, `from`, `to` |
 | `GET /meetings/:id`           | One meeting with its candidate and position                                                                        |
 | `POST /meetings`              | Books a meeting for an existing candidate (`candidateId`) or a new one (`candidateName`)                           |
