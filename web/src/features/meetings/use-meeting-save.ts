@@ -22,9 +22,6 @@ import type { Meeting } from "./types";
 export type Failure = { title?: string; message: string };
 type Refusal = Extract<SaveResult, { ok: false }>;
 
-// Where a saved or deleted meeting leads.
-const AFTER_SAVE = "/";
-
 const failedTo = (action: string) =>
   `Couldn't ${action}. Try again in a moment.`;
 
@@ -47,11 +44,13 @@ export function useMeetingSave({
   const [failure, setFailure] = useState<Failure | null>(null);
   const [saved, setSaved] = useState(false);
 
-  const finish = (message: string) => {
+  // A saved or deleted meeting leads to its candidate's page, where the
+  // result shows.
+  const finish = (message: string, candidateId: string) => {
     setSaved(true);
     onDone();
     toast.success(message);
-    router.push(AFTER_SAVE);
+    router.push(`/candidates/${candidateId}`);
   };
 
   const showRefusal = async (result: Refusal, day: string) => {
@@ -87,7 +86,10 @@ export function useMeetingSave({
       ? await updateMeeting(meeting.id, toMeetingChanges(values, zone))
       : await createMeeting(toNewMeeting(values, zone));
     if (result.ok) {
-      finish(meeting ? "Changes saved" : "Meeting booked");
+      finish(
+        meeting ? "Changes saved" : "Meeting booked",
+        result.data.meeting.candidate.id,
+      );
     } else {
       await showRefusal(result, values.date);
     }
@@ -97,7 +99,7 @@ export function useMeetingSave({
     if (!meeting) return false;
     const result = await deleteMeeting(meeting.id);
     if (result.ok) {
-      finish("Meeting deleted");
+      finish("Meeting deleted", meeting.candidate.id);
       return true;
     }
     setFailure({

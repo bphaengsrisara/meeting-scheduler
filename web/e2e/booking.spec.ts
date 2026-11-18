@@ -28,8 +28,8 @@ async function fillMeeting(page: Page, name: string, start: string) {
 }
 
 // A new guest each run: book, see an overlap refused in the form, edit,
-// then delete.
-test("book, edit and delete a meeting", async ({ page, request }) => {
+// then delete. Each save leads to the candidate's page.
+test("book, edit and delete a meeting", async ({ page }) => {
   await page.goto("/login");
   await page.getByRole("button", { name: "Continue as Guest" }).click();
   await expect(page.getByText("No Upcoming Meetings")).toBeVisible();
@@ -44,12 +44,12 @@ test("book, edit and delete a meeting", async ({ page, request }) => {
   );
   await page.getByRole("button", { name: "Book Meeting" }).click();
   await expect(page.getByText("Meeting booked")).toBeVisible();
-  await expect(page.getByText("Jan Novak")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Jan Novak" })).toBeVisible();
 
   // Another person with the same name, at the same hour: the name can still
   // be added as a new candidate, and the form marks the overlap and sends
   // nothing.
-  await page.getByRole("link", { name: "Book Meeting" }).click();
+  await page.goto("/meetings/new");
   await page
     .getByRole("combobox", { name: "Candidate Name" })
     .fill("Jan Novak");
@@ -63,17 +63,17 @@ test("book, edit and delete a meeting", async ({ page, request }) => {
     page.getByText("This time overlaps your meeting with Jan Novak"),
   ).toBeVisible();
 
-  // No page links to the edit form yet, so the test opens it by its address.
-  const api = await apiAs(page.context(), request);
-  const { meetings } = await api.get<{ meetings: { id: string }[] }>(
-    "/meetings",
-  );
-  await page.goto(`/meetings/${meetings[0].id}/edit`);
+  // The edit form is reached from the candidate's page, and Back returns
+  // there.
+  await page.goto("/");
+  await page.getByRole("link", { name: "View details for Jan Novak" }).click();
+  await page.getByRole("link", { name: "Edit Meeting" }).click();
   await page.getByLabel("Notes (optional)").fill("Second round");
   await page.getByRole("button", { name: "Save Changes" }).click();
   await expect(page.getByText("Changes saved")).toBeVisible();
+  await expect(page.getByText("Second round")).toBeVisible();
 
-  await page.goto(`/meetings/${meetings[0].id}/edit`);
+  await page.getByRole("link", { name: "Edit Meeting" }).click();
   await expect(page.getByLabel("Notes (optional)")).toHaveValue("Second round");
   await page.getByRole("button", { name: "Delete Meeting" }).click();
   await page
@@ -81,7 +81,9 @@ test("book, edit and delete a meeting", async ({ page, request }) => {
     .getByRole("button", { name: "Delete Meeting" })
     .click();
   await expect(page.getByText("Meeting deleted")).toBeVisible();
-  await expect(page.getByText("No Upcoming Meetings")).toBeVisible();
+  await expect(
+    page.getByText("No upcoming meetings with Jan Novak."),
+  ).toBeVisible();
 });
 
 // Booked meanwhile (another tab): the form's list did not show it, so the

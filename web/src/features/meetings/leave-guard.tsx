@@ -19,9 +19,11 @@ import { Button } from "@/components/ui/button";
 export function LeaveGuard({
   when,
   onLeave,
+  lost = "Your changes to this meeting will be lost.",
 }: Readonly<{
   when: boolean;
   onLeave: () => void;
+  lost?: string;
 }>) {
   const router = useRouter();
   const [href, setHref] = useState<string | null>(null);
@@ -65,9 +67,7 @@ export function LeaveGuard({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Leave Without Saving?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Your changes to this meeting will be lost.
-          </AlertDialogDescription>
+          <AlertDialogDescription>{lost}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Stay</AlertDialogCancel>

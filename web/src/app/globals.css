@@ -128,9 +128,10 @@
     @apply font-sans;
   }
   /* Tailwind 4 gives buttons the default arrow; show the hand, like links,
-     on everything clickable, list options included. */
+     on everything clickable, list options and radios included. */
   button:not(:disabled),
   [role="button"]:not(:disabled),
+  [role="radio"]:not([aria-disabled="true"]),
   [role="option"]:not([aria-disabled="true"]),
   [role="menuitem"]:not([aria-disabled="true"]) {
     cursor: pointer;

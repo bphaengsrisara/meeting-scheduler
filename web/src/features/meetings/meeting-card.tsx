@@ -1,5 +1,7 @@
 import { CalendarIcon, MapPinIcon, VideoIcon } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -10,10 +12,11 @@ import {
 } from "@/components/ui/card";
 import { initials } from "@/features/auth/initials";
 import { formatMeetingTime } from "@/lib/dates";
+import { cn } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
 import type { Meeting } from "./types";
 
-// One meeting. No link yet: the candidate page it would open is not built.
+// One meeting. "View Details" opens the candidate's page.
 export function MeetingCard({
   meeting,
   zone,
@@ -54,6 +57,16 @@ export function MeetingCard({
           <TypeIcon aria-hidden className="size-4 text-muted-foreground" />
           {online ? "Online" : "Onsite"}
         </span>
+        <Link
+          href={`/candidates/${candidate.id}`}
+          aria-label={`View details for ${candidate.name}`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "ml-auto",
+          )}
+        >
+          View Details
+        </Link>
       </CardContent>
     </Card>
   );

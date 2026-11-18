@@ -39,6 +39,9 @@ import { useMeetingSave } from "./use-meeting-save";
 
 type MeetingFormProps = {
   meeting?: Meeting;
+  // A new meeting for a known candidate (from their page): locked, with
+  // the role of their latest meeting picked.
+  candidate?: { id: string; name: string; positionId?: string };
   positions: Position[];
   zone: string;
   dayMeetings?: Meeting[] | null;
@@ -61,7 +64,8 @@ export function MeetingForm(props: Readonly<MeetingFormProps>) {
   );
   return (
     <MeetingFields
-      key={round}
+      // Starting values are read once: a newer copy of the meeting restarts it.
+      key={`${round}-${JSON.stringify(props.meeting ?? null)}`}
       {...props}
       onDone={() => {
         resetWhenHidden.current = true;
@@ -74,12 +78,14 @@ export function MeetingForm(props: Readonly<MeetingFormProps>) {
 // in UTC. The API checks everything again; the database refuses an overlap.
 function MeetingFields({
   meeting,
+  candidate,
   positions,
   zone,
   dayMeetings: initialDayMeetings = null,
   onDone,
 }: Readonly<MeetingFormProps & { onDone: () => void }>) {
   const isEdit = meeting !== undefined;
+  const lockedName = meeting?.candidate.name ?? candidate?.name;
   const [isPending, startTransition] = useTransition();
   const [unreadableDate, setUnreadableDate] = useState(false);
   // The overlap message shows after Book is pressed, then follows the times.
@@ -90,7 +96,14 @@ function MeetingFields({
 
   const form = useForm<MeetingFormInput, unknown, MeetingFormValues>({
     resolver: zodResolver(meetingFormSchema),
-    defaultValues: meeting ? meetingToForm(meeting, zone) : emptyMeetingForm,
+    defaultValues: meeting
+      ? meetingToForm(meeting, zone)
+      : {
+          ...emptyMeetingForm,
+          candidateId: candidate?.id ?? "",
+          candidateName: candidate?.name ?? "",
+          positionId: candidate?.positionId ?? "",
+        },
   });
   const [candidateId, candidateName, date, startTime, endTime, type] = useWatch(
     {
@@ -168,11 +181,11 @@ function MeetingFields({
         </Alert>
       )}
       <FieldGroup>
-        {isEdit ? (
+        {lockedName ? (
           <Field>
             <FieldLabel htmlFor="candidate">Candidate</FieldLabel>
             {/* The candidate of a meeting cannot change. */}
-            <Input id="candidate" value={meeting.candidate.name} disabled />
+            <Input id="candidate" value={lockedName} disabled />
           </Field>
         ) : (
           <Controller

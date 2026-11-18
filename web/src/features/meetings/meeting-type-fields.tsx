@@ -5,6 +5,7 @@ import { FieldError, FieldLegend, FieldSet } from "@/components/ui/field";
 import { RadioGroup } from "@/components/ui/radio-group";
 import type { MeetingFormInput, MeetingFormValues } from "./booking";
 import { RadioChoice } from "./radio-choice";
+import { PLATFORM_LABELS } from "./types";
 
 // Onsite or Online; the platform is asked only for Online, and picking
 // Onsite clears it (the API and the database refuse a platform onsite).
@@ -50,11 +51,15 @@ export function MeetingTypeFields({
                 onValueChange={field.onChange}
                 aria-invalid={fieldState.invalid}
               >
-                <RadioChoice id="platform-zoom" value="zoom" label="Zoom" />
+                <RadioChoice
+                  id="platform-zoom"
+                  value="zoom"
+                  label={PLATFORM_LABELS.zoom}
+                />
                 <RadioChoice
                   id="platform-google-meet"
                   value="google_meet"
-                  label="Google Meet"
+                  label={PLATFORM_LABELS.google_meet}
                 />
               </RadioGroup>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

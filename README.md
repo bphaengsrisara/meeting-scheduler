@@ -15,8 +15,9 @@ the Upcoming Meetings page: the user's meetings as cards, with search,
 filters (status, position, dates) and pages, all kept in the URL, and the
 booking form to book, edit and delete a meeting. The form lists the user's
 other meetings on the picked day and marks any that overlap before sending.
-The candidate page is not built yet; until then the edit form has no link to
-it and is opened by its address (`/meetings/<id>/edit`). The API has sign-up, login
+Each card opens the candidate page: the meetings still to happen with their
+status buttons (confirm, mark completed, cancel), interview notes, and the
+history with each interview's feedback. The API has sign-up, login
 and guest sessions through Better Auth, and the routes for positions,
 candidates and meetings, including the candidate page's data and feedback.
 
@@ -100,22 +101,23 @@ The routes, their query rules and the rules the API keeps are in
 
 ## Web structure
 
-| Path                     | What                                                                                                                                                                                     |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/`               | Routes (Next.js App Router): `(auth)/` for login and sign-up, `(app)/` for signed-in pages with the header                                                                               |
-| `src/features/auth/`     | Login and sign-up forms, their Zod rules, the Server Actions that call the API, logout, the guest notice; a signed-in user (not a guest) is sent from login and sign-up to the dashboard |
-| `src/features/meetings/` | The Upcoming Meetings page's parts (cards, filters, pages, empty states, the URL ↔ API query) and the booking form (its rules in `booking.ts`, its Server Actions in `actions.ts`)       |
-| `src/app/api/`           | Two GET Route Handlers the booking form calls from the browser: candidate suggestions and the day's meetings. Saving goes through Server Actions                                         |
-| `src/lib/dates.ts`       | The date and time formats, in the user's time zone (date-fns with @date-fns/tz)                                                                                                          |
-| `src/lib/time-zone*`     | The browser puts its time zone in a cookie; the server reads it to show local times                                                                                                      |
-| `src/lib/api.ts`         | The only way to call the API: adds the secret, the browser's IP and cookies; copies the API's cookies back                                                                               |
-| `src/lib/session.ts`     | Reads the signed-in user from the API (`requireUser()` sends others to `/login`)                                                                                                         |
-| `src/lib/env.ts`         | Checks the environment variables with Zod                                                                                                                                                |
-| `src/proxy.ts`           | Sends a browser with no session cookie to `/login`                                                                                                                                       |
-| `src/components/`        | The header, the logo, and shadcn/ui components in `ui/`                                                                                                                                  |
-| `src/lib/utils.ts`       | `cn()`, which merges class names for shadcn/ui components                                                                                                                                |
-| `components.json`        | shadcn/ui settings (Base UI primitives)                                                                                                                                                  |
-| `e2e/`                   | End-to-end tests with Playwright; `api.ts` creates test data through the API                                                                                                             |
+| Path                       | What                                                                                                                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/`                 | Routes (Next.js App Router): `(auth)/` for login and sign-up, `(app)/` for signed-in pages with the header                                                                               |
+| `src/features/auth/`       | Login and sign-up forms, their Zod rules, the Server Actions that call the API, logout, the guest notice; a signed-in user (not a guest) is sent from login and sign-up to the dashboard |
+| `src/features/meetings/`   | The Upcoming Meetings page's parts (cards, filters, pages, empty states, the URL ↔ API query) and the booking form (its rules in `booking.ts`, its Server Actions in `actions.ts`)       |
+| `src/features/candidates/` | The candidate page's parts: meeting rows, status buttons, interview notes, the Edit Name and feedback dialogs, and their Server Actions                                                  |
+| `src/app/api/`             | Two GET Route Handlers the booking form calls from the browser: candidate suggestions and the day's meetings. Saving goes through Server Actions                                         |
+| `src/lib/dates.ts`         | The date and time formats, in the user's time zone (date-fns with @date-fns/tz)                                                                                                          |
+| `src/lib/time-zone*`       | The browser puts its time zone in a cookie; the server reads it to show local times                                                                                                      |
+| `src/lib/api.ts`           | The only way to call the API: adds the secret, the browser's IP and cookies; copies the API's cookies back                                                                               |
+| `src/lib/session.ts`       | Reads the signed-in user from the API (`requireUser()` sends others to `/login`)                                                                                                         |
+| `src/lib/env.ts`           | Checks the environment variables with Zod                                                                                                                                                |
+| `src/proxy.ts`             | Sends a browser with no session cookie to `/login`                                                                                                                                       |
+| `src/components/`          | The header, the logo, and shadcn/ui components in `ui/`                                                                                                                                  |
+| `src/lib/utils.ts`         | `cn()`, which merges class names for shadcn/ui components                                                                                                                                |
+| `components.json`          | shadcn/ui settings (Base UI primitives)                                                                                                                                                  |
+| `e2e/`                     | End-to-end tests with Playwright; `api.ts` creates test data through the API                                                                                                             |
 
 ## Check the code
 

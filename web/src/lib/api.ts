@@ -43,3 +43,39 @@ export async function copyApiCookies(response: Response) {
     }
   }
 }
+
+// The answer to a change sent to the API: its JSON when it worked, or what a
+// form needs from a refusal (the status, the message, the messages per field).
+export type SendResult<T = unknown> =
+  | { ok: true; data: T }
+  | {
+      ok: false;
+      status: number;
+      message?: string;
+      fields?: Record<string, string[]>;
+    };
+
+export async function sendToApi<T = unknown>(
+  path: string,
+  method: string,
+  body?: unknown,
+): Promise<SendResult<T>> {
+  const response = await callApi(path, {
+    method,
+    headers: body ? { "content-type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  // A 204 (delete) has no body.
+  const json = (await response.json().catch(() => ({}))) as {
+    error?: { message?: string; fields?: Record<string, string[]> };
+  };
+  if (response.ok) {
+    return { ok: true, data: json as T };
+  }
+  return {
+    ok: false,
+    status: response.status,
+    message: json.error?.message,
+    fields: json.error?.fields,
+  };
+}

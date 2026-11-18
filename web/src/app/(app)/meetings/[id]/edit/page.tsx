@@ -7,7 +7,7 @@ import {
   listDayMeetings,
   listPositions,
 } from "@/features/meetings/api";
-import { BackLink } from "@/features/meetings/back-link";
+import { FormHeading } from "@/features/meetings/back-link";
 import { MeetingForm } from "@/features/meetings/meeting-form";
 import { dayAndTimeIn } from "@/lib/dates";
 import { requireUser } from "@/lib/session";
@@ -19,17 +19,22 @@ export const metadata: Metadata = { title: "Edit Meeting · Vellicor" };
 // ones are records, so there is nothing to edit.
 const EDITABLE = new Set(["pending", "confirmed"]);
 
+const TITLE = "Edit Meeting";
+
 // The title shows at once; the form follows when its data is read.
 export default function EditMeetingPage(
   props: Readonly<PageProps<"/meetings/[id]/edit">>,
 ) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <BackLink href="/" />
-        <h1 className="text-2xl font-semibold">Edit Meeting</h1>
-      </div>
-      <Suspense fallback={<Loading />}>
+      <Suspense
+        fallback={
+          <>
+            <FormHeading title={TITLE} />
+            <Loading />
+          </>
+        }
+      >
         <EditMeetingForm params={props.params} />
       </Suspense>
     </div>
@@ -57,12 +62,16 @@ async function EditMeetingForm({
     listDayMeetings(day, zone),
   ]);
 
+  // The edit form is opened from the candidate's page; Back returns there.
   return (
-    <MeetingForm
-      meeting={meeting}
-      positions={positions}
-      zone={zone}
-      dayMeetings={dayMeetings.filter((other) => other.id !== meeting.id)}
-    />
+    <>
+      <FormHeading title={TITLE} back={`/candidates/${meeting.candidate.id}`} />
+      <MeetingForm
+        meeting={meeting}
+        positions={positions}
+        zone={zone}
+        dayMeetings={dayMeetings.filter((other) => other.id !== meeting.id)}
+      />
+    </>
   );
 }

@@ -114,6 +114,7 @@ describe("meetingToForm", () => {
       notes: null,
       candidate: { id: "candidate-1", name: "Jane Doe" },
       position: { id: "position-1", name: "QA Engineer" },
+      feedback: null,
     };
     expect(meetingToForm(meeting, ZONE)).toEqual({
       candidateId: "candidate-1",

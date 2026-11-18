@@ -1,52 +1,47 @@
 "use server";
 
-import { callApi } from "@/lib/api";
+import { refresh } from "next/cache";
+import { sendToApi, type SendResult } from "@/lib/api";
 import type { MeetingBody } from "./booking";
+import type { Meeting, Recommendation } from "./types";
 
-// What the form needs from a refused save: the status, the API's message and
-// its messages per field.
-export type SaveResult =
-  | { ok: true }
-  | {
-      ok: false;
-      status: number;
-      message?: string;
-      fields?: Record<string, string[]>;
-    };
-
-async function send(path: string, method: string, body?: MeetingBody) {
-  const response = await callApi(path, {
-    method,
-    headers: body ? { "content-type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (response.ok) {
-    return { ok: true } as const;
-  }
-  const { error } = (await response.json().catch(() => ({}))) as {
-    error?: { message?: string; fields?: Record<string, string[]> };
-  };
-  return {
-    ok: false,
-    status: response.status,
-    message: error?.message,
-    fields: error?.fields,
-  } as const;
-}
+export type SaveResult = SendResult<{ meeting: Meeting }>;
 
 const meetingPath = (id: string) => `/meetings/${encodeURIComponent(id)}`;
 
 export async function createMeeting(body: MeetingBody): Promise<SaveResult> {
-  return send("/meetings", "POST", body);
+  return sendToApi("/meetings", "POST", body);
 }
 
 export async function updateMeeting(
   id: string,
   body: MeetingBody,
 ): Promise<SaveResult> {
-  return send(meetingPath(id), "PATCH", body);
+  return sendToApi(meetingPath(id), "PATCH", body);
 }
 
-export async function deleteMeeting(id: string): Promise<SaveResult> {
-  return send(meetingPath(id), "DELETE");
+export async function deleteMeeting(id: string): Promise<SendResult> {
+  return sendToApi(meetingPath(id), "DELETE");
+}
+
+// The candidate page's changes. Each reloads the page's data when it worked.
+
+export type StatusMove = "confirm" | "cancel" | "complete";
+
+export async function moveMeeting(
+  id: string,
+  move: StatusMove,
+): Promise<SendResult> {
+  const result = await sendToApi(`${meetingPath(id)}/${move}`, "POST");
+  if (result.ok) refresh();
+  return result;
+}
+
+export async function saveFeedback(
+  id: string,
+  body: { recommendation: Recommendation; comment: string },
+): Promise<SendResult> {
+  const result = await sendToApi(`${meetingPath(id)}/feedback`, "PUT", body);
+  if (result.ok) refresh();
+  return result;
 }
