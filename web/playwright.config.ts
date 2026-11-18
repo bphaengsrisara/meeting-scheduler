@@ -5,6 +5,9 @@ const E2E_RATE_LIMIT = 1000;
 
 export default defineConfig({
   testDir: "./e2e",
+  // CI runners are slower, and next dev compiles each page on its first
+  // visit; 5 seconds (Playwright's default) was not always enough there.
+  expect: { timeout: process.env.CI ? 15_000 : 5000 },
   use: {
     baseURL: "http://localhost:3000",
   },
