@@ -90,7 +90,10 @@ test("book, edit and delete a meeting", async ({ page }) => {
   await page.getByLabel("Notes (optional)").fill("Second round");
   await page.getByRole("button", { name: "Save Changes" }).click();
   await expect(page.getByText("Changes saved")).toBeVisible();
-  await expect(page.getByText("Second round")).toBeVisible();
+  // The note on the page; the edit form Next.js keeps hidden holds it too.
+  await expect(
+    page.getByRole("paragraph").filter({ hasText: "Second round" }),
+  ).toBeVisible();
 
   await page.getByRole("link", { name: "Edit Meeting" }).click();
   await expect(page.getByLabel("Notes (optional)")).toHaveValue("Second round");
