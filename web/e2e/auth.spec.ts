@@ -97,3 +97,27 @@ test("a guest sees the guest notice and confirms before logging out", async ({
   await page.getByRole("button", { name: "Log Out" }).click();
   await expect(page).toHaveURL(/\/login$/);
 });
+
+test("a signed-in user is sent from login and sign-up to the dashboard", async ({
+  page,
+}) => {
+  await signUp(page, "Jane Doe", newEmail());
+
+  await page.goto("/login");
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto("/signup");
+  await expect(page).toHaveURL(/\/$/);
+});
+
+test("a guest can still open login and sign-up to keep their meetings", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Continue as Guest" }).click();
+  await expect(page.getByText("You are using a guest account.")).toBeVisible();
+
+  await page.getByRole("link", { name: "Create an Account" }).click();
+  await expect(page).toHaveURL(/\/signup$/);
+  await page.goto("/login");
+  await expect(page).toHaveURL(/\/login$/);
+});

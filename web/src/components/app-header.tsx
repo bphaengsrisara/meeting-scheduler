@@ -11,8 +11,12 @@ export function AppHeader() {
   return (
     <header className="border-b">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
-        <Link href="/" aria-label="Vellicor, go to Upcoming Meetings">
+        {/* As in Figma: the app's name beside the logo, from sm up. */}
+        <Link href="/" className="flex items-center gap-3">
           <Logo className="size-8" />
+          <span className="hidden text-sm font-medium sm:inline">
+            Candidate Meeting Scheduler
+          </span>
         </Link>
         {/* The user part reads the session, so it streams in on its own. */}
         <Suspense>
@@ -38,7 +42,10 @@ async function HeaderUser() {
           )}
         </AvatarFallback>
       </Avatar>
-      <span className="max-w-48 truncate text-sm font-medium">{label}</span>
+      {/* A phone shows the avatar and Logout only, as in Figma. */}
+      <span className="hidden max-w-48 truncate text-sm font-medium sm:inline">
+        {label}
+      </span>
       <LogoutButton isGuest={user.isAnonymous} />
     </div>
   );
