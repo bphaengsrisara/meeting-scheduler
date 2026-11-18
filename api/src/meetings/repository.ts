@@ -1,0 +1,156 @@
+import { and, asc, count, eq, gte, ilike, inArray, lt, ne } from "drizzle-orm";
+import { db } from "../db/client.ts";
+import { candidate, meeting, position } from "../db/schema/app.ts";
+import { containsPattern } from "../lib/like.ts";
+
+export type MeetingStatus = (typeof meeting.$inferSelect)["status"];
+type MeetingChanges = Partial<
+  Pick<
+    typeof meeting.$inferInsert,
+    "positionId" | "startAt" | "endAt" | "type" | "platform" | "notes"
+  >
+>;
+export type NewMeeting = Required<MeetingChanges> &
+  ({ candidateId: string } | { candidateName: string });
+export type MeetingFilters = {
+  from: Date;
+  to?: Date;
+  q?: string;
+  status?: MeetingStatus;
+  positionId?: string;
+  page: number;
+  pageSize: number;
+};
+
+// Pending and confirmed meetings can still change; completed and cancelled
+// ones are History and are never edited or deleted.
+export const OPEN_STATUSES: MeetingStatus[] = ["pending", "confirmed"];
+
+// One meeting as the API returns it, with its candidate and position.
+function selectMeetings() {
+  return db
+    .select({
+      id: meeting.id,
+      startAt: meeting.startAt,
+      endAt: meeting.endAt,
+      type: meeting.type,
+      platform: meeting.platform,
+      status: meeting.status,
+      notes: meeting.notes,
+      candidate: { id: candidate.id, name: candidate.name },
+      position: { id: position.id, name: position.name },
+    })
+    .from(meeting)
+    .innerJoin(candidate, eq(candidate.id, meeting.candidateId))
+    .innerJoin(position, eq(position.id, meeting.positionId));
+}
+
+export type Meeting = Awaited<ReturnType<typeof selectMeetings>>[number];
+
+const ownedBy = (ownerId: string, id: string) =>
+  and(eq(meeting.id, id), eq(meeting.ownerId, ownerId));
+
+export async function listMeetings(ownerId: string, filters: MeetingFilters) {
+  const { from, to, q, status, positionId } = filters;
+  const where = and(
+    eq(meeting.ownerId, ownerId),
+    gte(meeting.startAt, from),
+    to ? lt(meeting.startAt, to) : undefined,
+    // Cancelled meetings show only when asked for.
+    status ? eq(meeting.status, status) : ne(meeting.status, "cancelled"),
+    positionId ? eq(meeting.positionId, positionId) : undefined,
+    q ? ilike(candidate.name, containsPattern(q)) : undefined,
+  );
+
+  const [meetings, [{ total }]] = await Promise.all([
+    selectMeetings()
+      .where(where)
+      .orderBy(asc(meeting.startAt), asc(meeting.id))
+      .limit(filters.pageSize)
+      .offset((filters.page - 1) * filters.pageSize),
+    db
+      .select({ total: count() })
+      .from(meeting)
+      .innerJoin(candidate, eq(candidate.id, meeting.candidateId))
+      .where(where),
+  ]);
+  return { meetings, total };
+}
+
+export async function findMeeting(
+  ownerId: string,
+  id: string,
+): Promise<Meeting | undefined> {
+  const [found] = await selectMeetings().where(ownedBy(ownerId, id));
+  return found;
+}
+
+// A new candidate, when there is one, is added in the same transaction, so a
+// refused meeting leaves no candidate behind.
+export async function insertMeeting(ownerId: string, input: NewMeeting) {
+  return db.transaction(async (tx) => {
+    let candidateId: string;
+    if ("candidateName" in input) {
+      const [added] = await tx
+        .insert(candidate)
+        .values({ ownerId, name: input.candidateName })
+        .returning({ id: candidate.id });
+      candidateId = added.id;
+    } else {
+      candidateId = input.candidateId;
+    }
+    const { positionId, startAt, endAt, type, platform, notes } = input;
+    const [created] = await tx
+      .insert(meeting)
+      .values({
+        ownerId,
+        candidateId,
+        positionId,
+        startAt,
+        endAt,
+        type,
+        platform,
+        notes,
+      })
+      .returning({ id: meeting.id });
+    return created.id;
+  });
+}
+
+// Changes only an open meeting; false when none matched.
+export async function updateOpenMeeting(
+  ownerId: string,
+  id: string,
+  changes: MeetingChanges,
+) {
+  const updated = await db
+    .update(meeting)
+    .set(changes)
+    .where(and(ownedBy(ownerId, id), inArray(meeting.status, OPEN_STATUSES)))
+    .returning({ id: meeting.id });
+  return updated.length > 0;
+}
+
+export async function deleteOpenMeeting(ownerId: string, id: string) {
+  const deleted = await db
+    .delete(meeting)
+    .where(and(ownedBy(ownerId, id), inArray(meeting.status, OPEN_STATUSES)))
+    .returning({ id: meeting.id });
+  return deleted.length > 0;
+}
+
+// Moves the status only from one of the given statuses, so two requests at
+// once cannot both move it.
+export async function setStatus(
+  ownerId: string,
+  id: string,
+  from: MeetingStatus[],
+  to: MeetingStatus,
+) {
+  const updated = await db
+    .update(meeting)
+    .set({ status: to })
+    .where(and(ownedBy(ownerId, id), inArray(meeting.status, from)))
+    .returning({ id: meeting.id });
+  return updated.length > 0;
+}

@@ -11,8 +11,8 @@ with several interviewers uses several accounts.
 
 The rule lives in the database, not only in the API. A check in the API
 reads and then writes, so two requests sent at the same moment can both
-pass it. PostgreSQL refuses the second instead, with
-error 23P01.
+pass it. PostgreSQL refuses the second instead, and the API turns its error
+(23P01) into a 409.
 
 `api/drizzle/0002_no-double-booking.sql`:
 
@@ -40,8 +40,8 @@ on `meeting`, because a constraint cannot read another table.
 
 A composite foreign key, `meeting (candidate_id, owner_id)` →
 `candidate (id, owner_id)`, keeps the two copies equal for every writer, not
-only the API. A meeting cannot point at another user's candidate: the database refuses
-it. With `on update cascade`, when
+only the API. A meeting cannot be booked with another user's candidate: the
+database refuses it, and the API answers 400. With `on update cascade`, when
 a candidate's owner changes, its meetings follow in the same update.
 
 ## Positions

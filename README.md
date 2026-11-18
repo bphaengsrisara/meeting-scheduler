@@ -12,8 +12,8 @@ design (desktop and mobile screens, components and the screen flow) is in
 
 Work in progress. The web app has login, sign-up and "Continue as Guest",
 and an Upcoming Meetings page that is still empty. The API has sign-up, login
-and guest sessions through Better Auth, and the tables for positions,
-candidates and meetings; their routes are not built yet.
+and guest sessions through Better Auth, and the routes for positions,
+candidates and meetings; the web app does not use them yet.
 
 ## Layout
 
@@ -21,7 +21,7 @@ candidates and meetings; their routes are not built yet.
 | ------- | ------------------------------------------------------- |
 | `web/`  | Frontend: Next.js (App Router), TypeScript              |
 | `api/`  | Backend: Express 5, TypeScript, run directly by Node.js |
-| `docs/` | Requirements, authentication, database                  |
+| `docs/` | Requirements, authentication, API routes, database      |
 
 `compose.yaml` runs PostgreSQL 18 for local work.
 
@@ -70,20 +70,28 @@ positions.
 Why the database keeps these rules, and how, is in
 [docs/database.md](docs/database.md).
 
+## API routes
+
+The routes, their query rules and the rules the API keeps are in
+[docs/api.md](docs/api.md).
+
 ## API structure
 
-| Path               | What                                                                        |
-| ------------------ | --------------------------------------------------------------------------- |
-| `src/index.ts`     | Starts the server                                                           |
-| `src/app.ts`       | Builds the Express app (used by the tests as well)                          |
-| `src/env.ts`       | Checks the environment variables with Zod                                   |
-| `src/middleware/`  | API secret check, rate limit, 404 and error handlers (one JSON error shape) |
-| `src/auth/`        | Better Auth setup (`/api/auth/*`) and Argon2id password hashing             |
-| `src/lib/`         | Logger, PostgreSQL error codes                                              |
-| `src/db/client.ts` | Connection pool (pg) and the Drizzle client                                 |
-| `src/db/schema/`   | Table definitions: Better Auth's in `auth.ts`, the app's in `app.ts`        |
-| `drizzle/`         | SQL migrations written by drizzle-kit                                       |
-| `src/health.ts`    | `GET /health`, which also checks the database                               |
+| Path               | What                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `src/index.ts`     | Starts the server                                                                   |
+| `src/app.ts`       | Builds the Express app (used by the tests as well)                                  |
+| `src/env.ts`       | Checks the environment variables with Zod                                           |
+| `src/middleware/`  | API secret check, rate limit, session check, Zod validation, 404 and error handlers |
+| `src/auth/`        | Better Auth setup (`/api/auth/*`) and Argon2id password hashing                     |
+| `src/meetings/`    | Meeting routes, rules (`service.ts`), queries (`repository.ts`), Zod schemas        |
+| `src/candidates/`  | Candidate search for the booking form's autocomplete                                |
+| `src/positions/`   | The position list                                                                   |
+| `src/lib/`         | Logger, the HTTP error type, PostgreSQL error codes                                 |
+| `src/db/client.ts` | Connection pool (pg) and the Drizzle client                                         |
+| `src/db/schema/`   | Table definitions: Better Auth's in `auth.ts`, the app's in `app.ts`                |
+| `drizzle/`         | SQL migrations written by drizzle-kit                                               |
+| `src/health.ts`    | `GET /health`, which also checks the database                                       |
 
 ## Web structure
 

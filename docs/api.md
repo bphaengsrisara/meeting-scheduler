@@ -1,0 +1,70 @@
+# API
+
+The routes of the Express API, apart from sign-up, login and guest sessions,
+which Better Auth serves on `/api/auth/*` (see [auth.md](auth.md)).
+
+## Routes
+
+Every route below needs a signed-in user (a guest counts) and answers with
+that user's data only. Errors have one shape:
+`{ "error": { "message", "fields"? } }`, where `fields` holds the messages for
+each form field.
+
+| Route                         | What                                                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `GET /positions`              | The roles a meeting can be for                                                                                     |
+| `GET /candidates?q=`          | Up to 10 candidates whose name contains `q`, each with the position of their latest meeting                        |
+| `GET /meetings`               | One page of meetings, earliest first; `page`, `pageSize`, `q` (candidate name), `status`, `position`, `from`, `to` |
+| `GET /meetings/:id`           | One meeting with its candidate and position                                                                        |
+| `POST /meetings`              | Books a meeting for an existing candidate (`candidateId`) or a new one (`candidateName`)                           |
+| `PATCH /meetings/:id`         | Changes a pending or confirmed meeting; its candidate cannot change                                                |
+| `DELETE /meetings/:id`        | Deletes a pending or confirmed meeting                                                                             |
+| `POST /meetings/:id/confirm`  | Pending → confirmed                                                                                                |
+| `POST /meetings/:id/cancel`   | Pending or confirmed → cancelled                                                                                   |
+| `POST /meetings/:id/complete` | Confirmed → completed, only once the meeting has started                                                           |
+
+`GET /meetings` without `from` starts from now and leaves out cancelled
+meetings unless `status=cancelled` is asked for. `from` and `to` are ISO 8601
+times with an offset; `to` is exclusive.
+
+## Rules the API keeps
+
+- A new meeting starts later than now and ends after it starts. An online
+  meeting names its platform (Zoom or Google Meet); an onsite one has none.
+- One user's meetings cannot overlap, unless one is cancelled. Two requests
+  at the same moment cannot both get through: the database refuses the
+  second, and the API answers 409 (see [database.md](database.md)).
+- Completed and cancelled meetings are a record: they cannot be edited or
+  deleted, and cancelled and completed are final (see
+  [Meeting status](#meeting-status)).
+
+## Meeting status
+
+```text
+pending → confirmed → completed
+pending or confirmed → cancelled
+```
+
+Nothing moves back. Each move is its own button and its own route; the API
+refuses any other move.
+
+- A meeting is confirmed before it is completed, one step at a time, as in a
+  ticket workflow.
+- Completed is set by hand, and only once the meeting has started, never
+  automatically: a meeting can run late.
+- Cancelled is final. A wrong cancel is fixed by booking again, as in
+  scheduling products: [Cal.com](https://cal.com/help/bookings/manage-a-booking.md)
+  has no way to bring back a cancelled booking, and the
+  [Google Calendar API](https://developers.google.com/workspace/calendar/api/v3/reference/events)
+  keeps a cancelled event with the status "cancelled".
+- Completed and cancelled meetings are a record: they cannot be edited or
+  deleted. Hiring records are kept in case a decision is challenged: the US
+  EEOC rule
+  ([29 CFR 1602.14](https://www.ecfr.gov/current/title-29/subtitle-B/chapter-XIV/part-1602/subpart-C/section-1602.14))
+  keeps them for a year, and the UK ICO
+  ([Keeping recruitment records](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/employment/recruitment-and-selection/keeping-recruitment-records/))
+  warns that deleting them too early makes a fair process harder to show.
+  Hiring tools such as Greenhouse keep an
+  [audit log](https://support.greenhouse.io/hc/en-us/articles/15114917200155-Audit-log-FAQ)
+  of changes. Here they are kept forever; a retention period with automatic
+  removal is the real-world answer.
