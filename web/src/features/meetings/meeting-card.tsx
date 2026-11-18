@@ -66,7 +66,7 @@ export function MeetingCard({
         </span>
         <Link
           href={`/candidates/${candidate.id}`}
-          aria-label={`View details for ${candidate.name}`}
+          aria-label={`View details for ${candidate.name}, ${candidate.email}`}
           className={cn(
             buttonVariants({ variant: "outline", size: "sm" }),
             "ml-auto",

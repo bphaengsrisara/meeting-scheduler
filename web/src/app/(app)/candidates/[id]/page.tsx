@@ -52,20 +52,24 @@ async function CandidateDetails({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-2">
+          {/* As on the meeting cards: the role beside the name, the email
+              under it, quieter than the role. */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h1 className="text-2xl font-semibold break-words">
               {candidate.name}
             </h1>
+            {role && <span className="text-lg">{role}</span>}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2">
+            <p className="text-sm break-words text-muted-foreground">
+              {candidate.email}
+            </p>
             <EditDetailsButton
               candidateId={candidate.id}
               name={candidate.name}
               email={candidate.email}
             />
           </div>
-          {/* The email first, as in the booking form's list. */}
-          <p className="break-words text-muted-foreground">
-            {[candidate.email, role].filter(Boolean).join(" · ")}
-          </p>
         </div>
         <Link
           href={bookHref}

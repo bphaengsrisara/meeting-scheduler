@@ -67,6 +67,10 @@ test("book, edit and delete a meeting", async ({ page }) => {
   ).toBeVisible();
   await fillMeeting(page, "Jan Novak", "jan.novak@example.com", "10:30");
   await expect(page.getByText("Overlaps", { exact: true })).toBeVisible();
+  // The day's list tells the first Jan Novak apart by email.
+  await expect(
+    page.getByRole("listitem").getByText("jan.novak@example.com"),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Book Meeting" }).click();
   await expect(
     page.getByText("This time overlaps your meeting with Jan Novak"),

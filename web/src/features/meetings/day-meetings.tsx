@@ -46,7 +46,13 @@ export function DayMeetings({
                 {formatTime(new Date(meeting.endAt), zone)}
               </span>
               <span className="flex min-w-0 items-center gap-2">
-                <span className="truncate">{meeting.candidate.name}</span>
+                {/* The email tells apart two people with the same name. */}
+                <span className="flex min-w-0 flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                  <span className="truncate">{meeting.candidate.name}</span>
+                  <span className="text-xs wrap-break-word text-muted-foreground">
+                    {meeting.candidate.email}
+                  </span>
+                </span>
                 {picked && overlaps(picked, meeting) && (
                   <Badge variant="destructive">Overlaps</Badge>
                 )}

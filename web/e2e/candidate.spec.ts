@@ -47,6 +47,14 @@ test("confirm, complete and add feedback on the candidate page", async ({
   await expect(
     page.getByText("ana.lima@example.com", { exact: true }).first(),
   ).toBeVisible();
+  // Its link names the person by email too, for screen readers.
+  await expect(
+    page
+      .getByRole("link", {
+        name: "View details for Ana Lima, ana.lima@example.com",
+      })
+      .first(),
+  ).toBeVisible();
   await page
     .getByRole("link", { name: "View details for Ana Lima" })
     .first()
@@ -113,8 +121,10 @@ test("confirm, complete and add feedback on the candidate page", async ({
     page.getByText("No upcoming meetings with Ana Lima."),
   ).toBeVisible();
 
-  // The email first, then the role of the latest meeting.
-  await expect(page.getByText(/^ana\.lima@example\.com · /)).toBeVisible();
+  // The email under the name, the latest meeting's role beside it.
+  await expect(
+    page.getByText("ana.lima@example.com", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Edit Details" }).click();
   await dialog.getByLabel("Full Name").fill("Ana Lima Souza");
   await dialog.getByRole("textbox", { name: "Email" }).fill("ana.souza");
