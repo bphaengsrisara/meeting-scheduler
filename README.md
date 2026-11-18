@@ -11,10 +11,9 @@ design (desktop and mobile screens, components and the screen flow) is in
 ## Status
 
 Work in progress. The web app has login, sign-up and "Continue as Guest",
-and an Upcoming Meetings page that is still empty. The API has its structure, configuration, logging and tests in place, a
-PostgreSQL connection through Drizzle ORM, `GET /health`, and sign-up, login
-and guest sessions through Better Auth. The meeting features are not built
-yet.
+and an Upcoming Meetings page that is still empty. The API has sign-up, login
+and guest sessions through Better Auth, and the tables for positions,
+candidates and meetings; their routes are not built yet.
 
 ## Layout
 
@@ -22,7 +21,7 @@ yet.
 | ------- | ------------------------------------------------------- |
 | `web/`  | Frontend: Next.js (App Router), TypeScript              |
 | `api/`  | Backend: Express 5, TypeScript, run directly by Node.js |
-| `docs/` | Requirements                                            |
+| `docs/` | Requirements, authentication, database                  |
 
 `compose.yaml` runs PostgreSQL 18 for local work.
 
@@ -62,20 +61,29 @@ The tables are defined in TypeScript in `api/src/db/schema/`. After changing
 them, `pnpm --filter api db:generate` writes a new SQL migration into
 `api/drizzle/`, and `pnpm --filter api db:migrate` applies it.
 
+Two migrations are written by hand (`drizzle-kit generate --custom`):
+`0002_no-double-booking.sql` adds the constraint that stops one user's
+meetings from overlapping, which Drizzle cannot declare, and
+`0003_positions.sql` fills the position list. There is no screen to edit
+positions.
+
+Why the database keeps these rules, and how, is in
+[docs/database.md](docs/database.md).
+
 ## API structure
 
-| Path                | What                                                                        |
-| ------------------- | --------------------------------------------------------------------------- |
-| `src/index.ts`      | Starts the server                                                           |
-| `src/app.ts`        | Builds the Express app (used by the tests as well)                          |
-| `src/env.ts`        | Checks the environment variables with Zod                                   |
-| `src/lib/logger.ts` | Logger (pino); logs every request, with the API secret and cookies redacted |
-| `src/middleware/`   | API secret check, rate limit, 404 and error handlers (one JSON error shape) |
-| `src/auth/`         | Better Auth setup (`/api/auth/*`) and Argon2id password hashing             |
-| `src/db/client.ts`  | Connection pool (pg) and the Drizzle client                                 |
-| `src/db/schema/`    | Table definitions (Better Auth's tables in `auth.ts`)                       |
-| `drizzle/`          | SQL migrations written by drizzle-kit                                       |
-| `src/health.ts`     | `GET /health`, which also checks the database                               |
+| Path               | What                                                                        |
+| ------------------ | --------------------------------------------------------------------------- |
+| `src/index.ts`     | Starts the server                                                           |
+| `src/app.ts`       | Builds the Express app (used by the tests as well)                          |
+| `src/env.ts`       | Checks the environment variables with Zod                                   |
+| `src/middleware/`  | API secret check, rate limit, 404 and error handlers (one JSON error shape) |
+| `src/auth/`        | Better Auth setup (`/api/auth/*`) and Argon2id password hashing             |
+| `src/lib/`         | Logger, PostgreSQL error codes                                              |
+| `src/db/client.ts` | Connection pool (pg) and the Drizzle client                                 |
+| `src/db/schema/`   | Table definitions: Better Auth's in `auth.ts`, the app's in `app.ts`        |
+| `drizzle/`         | SQL migrations written by drizzle-kit                                       |
+| `src/health.ts`    | `GET /health`, which also checks the database                               |
 
 ## Web structure
 
@@ -100,7 +108,7 @@ Run from the repository root:
 pnpm lint        # Prettier check, then ESLint in api and web
 pnpm lint:fix    # ESLint --fix in api and web, then Prettier rewrite (last, so lint passes)
 pnpm typecheck   # TypeScript check in api and web
-pnpm test        # Tests with Vitest in api and web (api needs the database up)
+pnpm test        # Tests with Vitest in api and web (api needs the database up, and Docker for Testcontainers)
 pnpm test:e2e    # End-to-end tests with Playwright; starts the API and web (database up)
 pnpm build       # Production build of web (the API runs its TypeScript directly, no build)
 pnpm verify      # All of it in order: lint:fix, typecheck, test, build, test:e2e; stops at the first failure

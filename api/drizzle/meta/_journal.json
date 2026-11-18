@@ -8,6 +8,27 @@
       "when": 1794867911938,
       "tag": "0000_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794962609847,
+      "tag": "0001_app",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794962615506,
+      "tag": "0002_no-double-booking",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794962615700,
+      "tag": "0003_positions",
+      "breakpoints": true
     }
   ]
 }
