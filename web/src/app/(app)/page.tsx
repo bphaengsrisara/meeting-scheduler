@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import { GuestNotice } from "@/features/auth/guest-notice";
 import { listMeetings, listPositions } from "@/features/meetings/api";
 import {
@@ -33,8 +35,12 @@ export default async function UpcomingMeetingsPage(props: PageProps<"/">) {
   return (
     <>
       {user.isAnonymous && <GuestNotice />}
-      {/* "Book Meeting" comes with the booking form (commit 6). */}
-      <h1 className="text-2xl font-semibold">Upcoming Meetings</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Upcoming Meetings</h1>
+        <Link href="/meetings/new" className={buttonVariants()}>
+          Book Meeting
+        </Link>
+      </div>
       {firstUse ? (
         <NoMeetings />
       ) : (

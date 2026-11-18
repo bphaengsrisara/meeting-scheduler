@@ -1,10 +1,9 @@
 import { z } from "zod";
+import { NAME_MAX } from "@/features/meetings/booking";
 
 // The same rules as the API (password length: docs/auth.md).
 export const PASSWORD_MIN = 15;
 export const PASSWORD_MAX = 64;
-// The same limit as a candidate's name; the API sets none for an account.
-export const NAME_MAX = 100;
 
 const email = z
   .string()
@@ -18,6 +17,7 @@ export const loginSchema = z.object({
 });
 
 export const signupSchema = z.object({
+  // The same limit as a candidate's name; the API sets none for an account.
   name: z.string().trim().max(NAME_MAX, `Use ${NAME_MAX} characters or fewer.`),
   email,
   password: z

@@ -11,9 +11,12 @@ design (desktop and mobile screens, components and the screen flow) is in
 ## Status
 
 Work in progress. The web app has login, sign-up and "Continue as Guest",
-and the Upcoming Meetings page: the user's meetings as cards, with search,
-filters (status, position, dates) and pages, all kept in the URL. Booking a
-meeting and the candidate page are not built yet. The API has sign-up, login
+the Upcoming Meetings page: the user's meetings as cards, with search,
+filters (status, position, dates) and pages, all kept in the URL, and the
+booking form to book, edit and delete a meeting. The form lists the user's
+other meetings on the picked day and marks any that overlap before sending.
+The candidate page is not built yet; until then the edit form has no link to
+it and is opened by its address (`/meetings/<id>/edit`). The API has sign-up, login
 and guest sessions through Better Auth, and the routes for positions,
 candidates and meetings.
 
@@ -101,7 +104,8 @@ The routes, their query rules and the rules the API keeps are in
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/`               | Routes (Next.js App Router): `(auth)/` for login and sign-up, `(app)/` for signed-in pages with the header                                                                               |
 | `src/features/auth/`     | Login and sign-up forms, their Zod rules, the Server Actions that call the API, logout, the guest notice; a signed-in user (not a guest) is sent from login and sign-up to the dashboard |
-| `src/features/meetings/` | The Upcoming Meetings page's parts: cards, filters, pages, empty states, and the URL ↔ API query                                                                                         |
+| `src/features/meetings/` | The Upcoming Meetings page's parts (cards, filters, pages, empty states, the URL ↔ API query) and the booking form (its rules in `booking.ts`, its Server Actions in `actions.ts`)       |
+| `src/app/api/`           | Two GET Route Handlers the booking form calls from the browser: candidate suggestions and the day's meetings. Saving goes through Server Actions                                         |
 | `src/lib/dates.ts`       | The date and time formats, in the user's time zone (date-fns with @date-fns/tz)                                                                                                          |
 | `src/lib/time-zone*`     | The browser puts its time zone in a cookie; the server reads it to show local times                                                                                                      |
 | `src/lib/api.ts`         | The only way to call the API: adds the secret, the browser's IP and cookies; copies the API's cookies back                                                                               |

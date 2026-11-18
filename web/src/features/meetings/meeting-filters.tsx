@@ -38,7 +38,7 @@ import { MEETING_STATUSES, type MeetingStatus, type Position } from "./types";
 const ALL = "all";
 // How long typing must pause before the list reloads: a common wait, long
 // enough to skip the keys inside a word, short enough to feel live.
-const SEARCH_PAUSE_MS = 300;
+export const SEARCH_PAUSE_MS = 300;
 
 // Every change goes into the URL; the page reads the URL and lists again.
 export function MeetingFilters({

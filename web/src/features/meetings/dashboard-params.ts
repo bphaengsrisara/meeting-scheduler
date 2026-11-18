@@ -1,18 +1,16 @@
 import { z } from "zod";
-import { startOfDayIn, startOfNextDayIn } from "@/lib/dates";
+import { DAY_PATTERN, startOfDayIn, startOfNextDayIn } from "@/lib/dates";
+import { NAME_MAX } from "./booking";
 import { MEETING_STATUSES } from "./types";
 
 // The dashboard's search, filters and page live in the URL, so a filtered
 // page can be reloaded or shared. A value that does not parse is ignored.
 // A day as the date filter writes it in the URL: 2026-11-01.
-const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-// The search is a candidate's name, so it has the API's name limit.
-const SEARCH_MAX = 100;
-
 const day = z.string().regex(DAY_PATTERN);
 
 const dashboardParamsSchema = z.object({
-  q: z.string().trim().min(1).max(SEARCH_MAX).optional().catch(undefined),
+  // The search is a candidate's name, so it has the same limit.
+  q: z.string().trim().min(1).max(NAME_MAX).optional().catch(undefined),
   status: z.enum(MEETING_STATUSES).optional().catch(undefined),
   position: z.uuid().optional().catch(undefined),
   from: day.optional().catch(undefined),
