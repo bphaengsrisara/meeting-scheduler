@@ -11,9 +11,11 @@ design (desktop and mobile screens, components and the screen flow) is in
 ## Status
 
 Work in progress. The web app has login, sign-up and "Continue as Guest",
-and an Upcoming Meetings page that is still empty. The API has sign-up, login
+and the Upcoming Meetings page: the user's meetings as cards, with search,
+filters (status, position, dates) and pages, all kept in the URL. Booking a
+meeting and the candidate page are not built yet. The API has sign-up, login
 and guest sessions through Better Auth, and the routes for positions,
-candidates and meetings; the web app does not use them yet.
+candidates and meetings.
 
 ## Layout
 
@@ -95,18 +97,21 @@ The routes, their query rules and the rules the API keeps are in
 
 ## Web structure
 
-| Path                 | What                                                                                                       |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `src/app/`           | Routes (Next.js App Router): `(auth)/` for login and sign-up, `(app)/` for signed-in pages with the header |
-| `src/features/auth/` | Login and sign-up forms, their Zod rules, the Server Actions that call the API, logout, the guest notice   |
-| `src/lib/api.ts`     | The only way to call the API: adds the secret, the browser's IP and cookies; copies the API's cookies back |
-| `src/lib/session.ts` | Reads the signed-in user from the API (`requireUser()` sends others to `/login`)                           |
-| `src/lib/env.ts`     | Checks the environment variables with Zod                                                                  |
-| `src/proxy.ts`       | Sends a browser with no session cookie to `/login`                                                         |
-| `src/components/`    | The header, the logo, and shadcn/ui components in `ui/`                                                    |
-| `src/lib/utils.ts`   | `cn()`, which merges class names for shadcn/ui components                                                  |
-| `components.json`    | shadcn/ui settings (Base UI primitives)                                                                    |
-| `e2e/`               | End-to-end tests with Playwright                                                                           |
+| Path                     | What                                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `src/app/`               | Routes (Next.js App Router): `(auth)/` for login and sign-up, `(app)/` for signed-in pages with the header |
+| `src/features/auth/`     | Login and sign-up forms, their Zod rules, the Server Actions that call the API, logout, the guest notice   |
+| `src/features/meetings/` | The Upcoming Meetings page's parts: cards, filters, pages, empty states, and the URL ↔ API query           |
+| `src/lib/dates.ts`       | The date and time formats, in the user's time zone (date-fns with @date-fns/tz)                            |
+| `src/lib/time-zone*`     | The browser puts its time zone in a cookie; the server reads it to show local times                        |
+| `src/lib/api.ts`         | The only way to call the API: adds the secret, the browser's IP and cookies; copies the API's cookies back |
+| `src/lib/session.ts`     | Reads the signed-in user from the API (`requireUser()` sends others to `/login`)                           |
+| `src/lib/env.ts`         | Checks the environment variables with Zod                                                                  |
+| `src/proxy.ts`           | Sends a browser with no session cookie to `/login`                                                         |
+| `src/components/`        | The header, the logo, and shadcn/ui components in `ui/`                                                    |
+| `src/lib/utils.ts`       | `cn()`, which merges class names for shadcn/ui components                                                  |
+| `components.json`        | shadcn/ui settings (Base UI primitives)                                                                    |
+| `e2e/`                   | End-to-end tests with Playwright; `api.ts` creates test data through the API                               |
 
 ## Check the code
 
