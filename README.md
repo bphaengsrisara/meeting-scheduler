@@ -30,7 +30,8 @@ candidates and meetings, including the candidate page's data and feedback.
 | `docs/` | Requirements, authentication, API routes, database      |
 
 `compose.yaml` runs PostgreSQL 18 for local work, and can run the whole stack.
-Each app has a Dockerfile; see [Docker images](#docker-images).
+Each app has a Dockerfile; see [Docker images](#docker-images). `render.yaml`
+deploys the app on Render; see [Deploy](#deploy).
 
 The two apps share one pnpm workspace.
 
@@ -177,3 +178,12 @@ variables come from the host when the container runs.
 on http://localhost:3000 and the API on http://localhost:3001, with the
 `.env.example` values. The API runs in production mode there, so Better Auth
 allows 3 sign-ins per 10 seconds from one address.
+
+## Deploy
+
+`render.yaml` is a Render Blueprint (Render's infrastructure as code): the
+web app and the API as two Docker web services and a PostgreSQL 18
+database, all on Render's free plan. Render generates `BETTER_AUTH_SECRET`
+and `API_SECRET`. Each service deploys after the GitHub Actions checks
+pass, and only when its own files change. Render's free plan has no
+pre-deploy step, so the migrations run when the API container starts.
