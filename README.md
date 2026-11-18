@@ -149,7 +149,7 @@ Playwright needs its browser once:
 GitHub Actions runs the same checks (lint, typecheck, test, build, test:e2e)
 on every push to `main` and on every pull request, with PostgreSQL 18 as a
 service container and the `.env.example` files as the `.env` files; see
-`.github/workflows/ci.yml`.
+`.github/workflows/ci.yml`. A second job builds both Docker images.
 
 Prettier has one config for both apps, `.prettierrc.json` at the root. A
 formatting problem makes `pnpm lint` fail; `pnpm lint:fix` fixes it. Each

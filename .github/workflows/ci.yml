@@ -57,3 +57,11 @@ jobs:
       - name: Install the Playwright browser
         run: pnpm --filter web exec playwright install --with-deps chromium --only-shell
       - run: pnpm test:e2e
+
+  # The images the deploy builds, so a broken Dockerfile fails here first.
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -f api/Dockerfile .
+      - run: docker build -f web/Dockerfile .
