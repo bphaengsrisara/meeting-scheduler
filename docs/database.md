@@ -42,7 +42,8 @@ A composite foreign key, `meeting (candidate_id, owner_id)` →
 `candidate (id, owner_id)`, keeps the two copies equal for every writer, not
 only the API. A meeting cannot be booked with another user's candidate: the
 database refuses it, and the API answers 400. With `on update cascade`, when
-a candidate's owner changes, its meetings follow in the same update.
+a guest's candidates move to their account, their meetings follow in the
+same update.
 
 ## Positions
 

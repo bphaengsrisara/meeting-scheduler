@@ -31,3 +31,12 @@ export function searchCandidates(ownerId: string, q: string) {
     .orderBy(asc(candidate.name))
     .limit(SUGGESTIONS);
 }
+
+// When a guest signs up or logs in, their candidates move to the account.
+// Their meetings follow through the foreign key's ON UPDATE CASCADE.
+export async function moveCandidates(fromOwnerId: string, toOwnerId: string) {
+  await db
+    .update(candidate)
+    .set({ ownerId: toOwnerId })
+    .where(eq(candidate.ownerId, fromOwnerId));
+}

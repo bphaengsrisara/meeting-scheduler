@@ -5,6 +5,7 @@ import { db } from "../db/client.ts";
 import * as schema from "../db/schema/auth.ts";
 import { env } from "../env.ts";
 import { CLIENT_IP_HEADER } from "../middleware/api-secret.ts";
+import { linkGuest } from "./link-guest.ts";
 import { hashPassword, verifyPassword } from "./password.ts";
 
 export const auth = betterAuth({
@@ -21,7 +22,7 @@ export const auth = betterAuth({
     password: { hash: hashPassword, verify: verifyPassword },
   },
   // "Continue as Guest": a signed-in user with no email or password.
-  plugins: [anonymous()],
+  plugins: [anonymous({ onLinkAccount: linkGuest })],
   advanced: {
     // uuid ids, the same type as owner_id on the app's tables.
     database: { generateId: "uuid" },

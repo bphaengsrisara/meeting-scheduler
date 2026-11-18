@@ -37,6 +37,9 @@ times with an offset; `to` is exclusive.
 - Completed and cancelled meetings are a record: they cannot be edited or
   deleted, and cancelled and completed are final (see
   [Meeting status](#meeting-status)).
+- When a guest signs up or logs in, their candidates and meetings move to the
+  account. If a moved meeting would overlap one of the account's, the login is
+  refused with 409 and they stay a guest, so they can change it and try again.
 
 ## Meeting status
 

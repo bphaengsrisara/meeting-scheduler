@@ -83,7 +83,7 @@ The routes, their query rules and the rules the API keeps are in
 | `src/app.ts`       | Builds the Express app (used by the tests as well)                                  |
 | `src/env.ts`       | Checks the environment variables with Zod                                           |
 | `src/middleware/`  | API secret check, rate limit, session check, Zod validation, 404 and error handlers |
-| `src/auth/`        | Better Auth setup (`/api/auth/*`) and Argon2id password hashing                     |
+| `src/auth/`        | Better Auth setup (`/api/auth/*`), Argon2id hashing, the hook that moves guest data |
 | `src/meetings/`    | Meeting routes, rules (`service.ts`), queries (`repository.ts`), Zod schemas        |
 | `src/candidates/`  | Candidate search for the booking form's autocomplete                                |
 | `src/positions/`   | The position list                                                                   |
