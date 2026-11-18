@@ -14,18 +14,25 @@ each form field.
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `GET /positions`              | The roles a meeting can be for                                                                                     |
 | `GET /candidates?q=`          | Up to 10 candidates whose name contains `q`, each with the position and start of their latest meeting              |
+| `GET /candidates/:id`         | The candidate page: the candidate, `upcoming` meetings (earliest first) and `history` (newest first)               |
+| `PATCH /candidates/:id`       | Changes the candidate's `name` or `notes`                                                                          |
 | `GET /meetings`               | One page of meetings, earliest first; `page`, `pageSize`, `q` (candidate name), `status`, `position`, `from`, `to` |
-| `GET /meetings/:id`           | One meeting with its candidate and position                                                                        |
+| `GET /meetings/:id`           | One meeting with its candidate, position and feedback                                                              |
 | `POST /meetings`              | Books a meeting for an existing candidate (`candidateId`) or a new one (`candidateName`)                           |
 | `PATCH /meetings/:id`         | Changes a pending or confirmed meeting; its candidate cannot change                                                |
 | `DELETE /meetings/:id`        | Deletes a pending or confirmed meeting                                                                             |
 | `POST /meetings/:id/confirm`  | Pending → confirmed                                                                                                |
 | `POST /meetings/:id/cancel`   | Pending or confirmed → cancelled                                                                                   |
 | `POST /meetings/:id/complete` | Confirmed → completed, only once the meeting has started                                                           |
+| `PUT /meetings/:id/feedback`  | Adds the feedback of a completed meeting (`recommendation`, `comment`), or replaces it                             |
 
 `GET /meetings` without `from` starts from now and leaves out cancelled
 meetings unless `status=cancelled` is asked for. `from` and `to` are ISO 8601
 times with an offset; `to` is exclusive.
+
+On the candidate page, `upcoming` holds pending and confirmed meetings and
+`history` completed and cancelled ones. The split is by status, not time: a
+meeting that has started but is not marked completed stays in `upcoming`.
 
 ## Rules the API keeps
 
@@ -37,6 +44,9 @@ times with an offset; `to` is exclusive.
 - Completed and cancelled meetings are a record: they cannot be edited or
   deleted, and cancelled and completed are final (see
   [Meeting status](#meeting-status)).
+- A meeting has at most one feedback, added once it is completed: a
+  recommendation (strong no, no, yes, strong yes) and an optional comment.
+  Saving again replaces it; only the latest version is kept.
 - When a guest signs up or logs in, their candidates and meetings move to the
   account. If a moved meeting would overlap one of the account's, the login is
   refused with 409 and they stay a guest, so they can change it and try again.

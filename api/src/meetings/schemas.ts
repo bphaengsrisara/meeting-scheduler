@@ -1,24 +1,20 @@
 import { z } from "zod";
-import { candidateName, NAME_MAX } from "../candidates/schemas.ts";
 import {
+  candidateName,
+  NAME_MAX,
+  optionalText,
+} from "../candidates/schemas.ts";
+import {
+  feedbackRecommendation,
   meetingPlatform,
   meetingStatus,
   meetingType,
 } from "../db/schema/app.ts";
 
-export const NOTES_MAX = 2000;
-
 // An ISO 8601 date and time with its offset, e.g. 2026-11-18T03:00:00Z.
 const dateTime = z.iso
   .datetime({ offset: true, error: "Enter a date and time." })
   .transform((value) => new Date(value));
-
-const notes = z
-  .string()
-  .trim()
-  .max(NOTES_MAX, `Use ${NOTES_MAX} characters or fewer.`)
-  .transform((value) => value || null)
-  .nullable();
 
 // Rules across fields (end after start, platform only when online) are
 // checked by the service, after an edit is merged with the stored meeting.
@@ -28,7 +24,7 @@ const meetingFields = {
   endAt: dateTime,
   type: z.enum(meetingType.enumValues, "Choose the meeting type."),
   platform: z.enum(meetingPlatform.enumValues, "Choose a platform.").nullable(),
-  notes,
+  notes: optionalText,
 };
 
 // Either an existing candidate's id or a new candidate's name.
@@ -36,7 +32,7 @@ export const createMeetingBody = z
   .object({
     ...meetingFields,
     platform: meetingFields.platform.default(null),
-    notes: notes.default(null),
+    notes: optionalText.default(null),
     candidateId: z.uuid().optional(),
     candidateName: candidateName.optional(),
   })
@@ -66,6 +62,16 @@ export const listMeetingsQuery = z.object({
 
 export const meetingIdParams = z.object({ id: z.uuid() });
 
+// Creates the meeting's feedback, or replaces it when there is one.
+export const feedbackBody = z.object({
+  recommendation: z.enum(
+    feedbackRecommendation.enumValues,
+    "Choose a recommendation.",
+  ),
+  comment: optionalText.default(null),
+});
+
 export type CreateMeetingBody = z.infer<typeof createMeetingBody>;
 export type UpdateMeetingBody = z.infer<typeof updateMeetingBody>;
 export type ListMeetingsQuery = z.infer<typeof listMeetingsQuery>;
+export type FeedbackBody = z.infer<typeof feedbackBody>;

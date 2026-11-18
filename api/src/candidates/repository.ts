@@ -3,6 +3,7 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { db } from "../db/client.ts";
 import { candidate, meeting } from "../db/schema/app.ts";
 import { containsPattern } from "../lib/like.ts";
+import type { UpdateCandidateBody } from "./schemas.ts";
 
 const SUGGESTIONS = 10;
 
@@ -36,6 +37,40 @@ export function searchCandidates(ownerId: string, q: string) {
     )
     .orderBy(asc(candidate.name))
     .limit(SUGGESTIONS);
+}
+
+const candidateFields = {
+  id: candidate.id,
+  name: candidate.name,
+  notes: candidate.notes,
+};
+type Candidate = { id: string; name: string; notes: string | null };
+const ownedBy = (ownerId: string, id: string) =>
+  and(eq(candidate.id, id), eq(candidate.ownerId, ownerId));
+
+export async function findCandidate(
+  ownerId: string,
+  id: string,
+): Promise<Candidate | undefined> {
+  const [found] = await db
+    .select(candidateFields)
+    .from(candidate)
+    .where(ownedBy(ownerId, id));
+  return found;
+}
+
+// The updated candidate, or undefined when none of the user's matched.
+export async function updateCandidate(
+  ownerId: string,
+  id: string,
+  changes: UpdateCandidateBody,
+): Promise<Candidate | undefined> {
+  const [updated] = await db
+    .update(candidate)
+    .set(changes)
+    .where(ownedBy(ownerId, id))
+    .returning(candidateFields);
+  return updated;
 }
 
 // When a guest signs up or logs in, their candidates move to the account.

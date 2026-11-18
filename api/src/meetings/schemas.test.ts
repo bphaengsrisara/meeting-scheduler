@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createMeetingBody, listMeetingsQuery } from "./schemas.ts";
+import {
+  createMeetingBody,
+  feedbackBody,
+  listMeetingsQuery,
+} from "./schemas.ts";
 
 const booking = {
   positionId: "01a1ec1c-0000-7000-8000-000000000004",
@@ -55,5 +59,15 @@ describe("listMeetingsQuery", () => {
 
   it("refuses an unknown status", () => {
     expect(listMeetingsQuery.safeParse({ status: "done" }).success).toBe(false);
+  });
+});
+
+describe("feedbackBody", () => {
+  it("needs one of the four recommendations; the comment is optional", () => {
+    const body = feedbackBody.parse({ recommendation: "strong_yes" });
+    const unknown = feedbackBody.safeParse({ recommendation: "maybe" });
+
+    expect(body).toEqual({ recommendation: "strong_yes", comment: null });
+    expect(unknown.success).toBe(false);
   });
 });

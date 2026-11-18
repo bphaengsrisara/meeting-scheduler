@@ -3,10 +3,12 @@ import { currentUserId } from "../middleware/require-session.ts";
 import { validate } from "../middleware/validate.ts";
 import {
   createMeetingBody,
+  feedbackBody,
   listMeetingsQuery,
   meetingIdParams,
   updateMeetingBody,
   type CreateMeetingBody,
+  type FeedbackBody,
   type ListMeetingsQuery,
   type UpdateMeetingBody,
 } from "./schemas.ts";
@@ -73,3 +75,19 @@ for (const move of ["confirm", "cancel", "complete"] as const) {
     res.json({ meeting });
   });
 }
+
+// Adds the feedback of a completed meeting, or replaces it.
+meetingsRouter.put(
+  "/:id/feedback",
+  withId,
+  validate({ body: feedbackBody }),
+  async (_req, res) => {
+    const body = res.locals.body as FeedbackBody;
+    const meeting = await service.saveFeedback(
+      currentUserId(res),
+      idOf(res),
+      body,
+    );
+    res.json({ meeting });
+  },
+);

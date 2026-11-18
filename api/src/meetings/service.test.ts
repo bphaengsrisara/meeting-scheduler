@@ -13,6 +13,7 @@ vi.mock("./repository.ts", async (importOriginal) => ({
   updateOpenMeeting: vi.fn(),
   deleteOpenMeeting: vi.fn(),
   setStatus: vi.fn(),
+  saveFeedback: vi.fn(),
 }));
 
 const owner = "01a1ec1c-0000-7000-8000-000000000001";
@@ -30,6 +31,7 @@ const stored: Meeting = {
   notes: null,
   candidate: { id: "01a1ec1c-0000-7000-8000-000000000003", name: "Jane Doe" },
   position: { id: "01a1ec1c-0000-7000-8000-000000000004", name: "QA Engineer" },
+  feedback: null,
 };
 
 const newBooking = {
@@ -306,5 +308,45 @@ describe("moveStatus", () => {
     );
 
     expect(error.status).toBe(409);
+  });
+});
+
+describe("saveFeedback", () => {
+  const review = { recommendation: "yes" as const, comment: "Clear answers." };
+
+  it("saves the feedback of a completed meeting", async () => {
+    vi.mocked(repository.findMeeting).mockResolvedValue({
+      ...stored,
+      status: "completed",
+    });
+
+    await service.saveFeedback(owner, stored.id, review);
+
+    expect(repository.saveFeedback).toHaveBeenCalledWith(stored.id, review);
+  });
+
+  it.each(["pending", "confirmed", "cancelled"] as const)(
+    "refuses feedback on a %s meeting",
+    async (status) => {
+      vi.mocked(repository.findMeeting).mockResolvedValue({
+        ...stored,
+        status,
+      });
+
+      const error = await refusal(
+        service.saveFeedback(owner, stored.id, review),
+      );
+
+      expect(error.status).toBe(409);
+      expect(repository.saveFeedback).not.toHaveBeenCalled();
+    },
+  );
+
+  it("answers 404 for a meeting that is not the user's", async () => {
+    vi.mocked(repository.findMeeting).mockResolvedValue(undefined);
+
+    const error = await refusal(service.saveFeedback(owner, stored.id, review));
+
+    expect(error.status).toBe(404);
   });
 });

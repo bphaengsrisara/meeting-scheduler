@@ -12,6 +12,7 @@ import * as repository from "./repository.ts";
 import type { Meeting, MeetingStatus } from "./repository.ts";
 import type {
   CreateMeetingBody,
+  FeedbackBody,
   ListMeetingsQuery,
   UpdateMeetingBody,
 } from "./schemas.ts";
@@ -153,6 +154,24 @@ export async function moveStatus(
   if (!(await repository.setStatus(ownerId, id, from, to))) {
     throw new HttpError(409, refused);
   }
+  return getMeeting(ownerId, id);
+}
+
+// Feedback is about a meeting that was held, so it waits for Mark Completed.
+// Completed is final, so the meeting cannot move away before the write.
+export async function saveFeedback(
+  ownerId: string,
+  id: string,
+  body: FeedbackBody,
+) {
+  const current = await getMeeting(ownerId, id);
+  if (current.status !== "completed") {
+    throw new HttpError(
+      409,
+      "Feedback can be added once the meeting is completed.",
+    );
+  }
+  await repository.saveFeedback(id, body);
   return getMeeting(ownerId, id);
 }
 

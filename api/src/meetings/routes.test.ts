@@ -49,6 +49,23 @@ describe("meetings routes", () => {
     expect(malformed.status).toBe(404);
   });
 
+  it("answers 400 with the field for feedback without a recommendation", async () => {
+    const res = await signedInApi()
+      .put("/meetings/01a1ec1c-0000-7000-8000-000000000000/feedback")
+      .send({ comment: "Clear answers." });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.fields).toHaveProperty("recommendation");
+  });
+
+  it("answers 404 for feedback on a meeting that is not the user's", async () => {
+    const res = await signedInApi()
+      .put("/meetings/01a1ec1c-0000-7000-8000-000000000000/feedback")
+      .send({ recommendation: "yes" });
+
+    expect(res.status).toBe(404);
+  });
+
   it("answers 400 for a body that is not JSON", async () => {
     const res = await signedInApi()
       .post("/meetings")

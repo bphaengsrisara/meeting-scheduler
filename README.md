@@ -18,7 +18,7 @@ other meetings on the picked day and marks any that overlap before sending.
 The candidate page is not built yet; until then the edit form has no link to
 it and is opened by its address (`/meetings/<id>/edit`). The API has sign-up, login
 and guest sessions through Better Auth, and the routes for positions,
-candidates and meetings.
+candidates and meetings, including the candidate page's data and feedback.
 
 ## Layout
 
@@ -90,7 +90,7 @@ The routes, their query rules and the rules the API keeps are in
 | `src/middleware/`  | API secret check, rate limit, session check, Zod validation, 404 and error handlers |
 | `src/auth/`        | Better Auth setup (`/api/auth/*`), Argon2id hashing, the hook that moves guest data |
 | `src/meetings/`    | Meeting routes, rules (`service.ts`), queries (`repository.ts`), Zod schemas        |
-| `src/candidates/`  | Candidate search for the booking form's autocomplete                                |
+| `src/candidates/`  | Candidate search, the candidate page's data, name and notes changes                 |
 | `src/positions/`   | The position list                                                                   |
 | `src/lib/`         | Logger, the HTTP error type, PostgreSQL error codes                                 |
 | `src/db/client.ts` | Connection pool (pg) and the Drizzle client                                         |

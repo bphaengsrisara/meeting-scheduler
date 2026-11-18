@@ -1,6 +1,17 @@
-import { and, asc, count, eq, gte, ilike, inArray, lt, ne } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lt,
+  ne,
+  sql,
+} from "drizzle-orm";
 import { db } from "../db/client.ts";
-import { candidate, meeting, position } from "../db/schema/app.ts";
+import { candidate, feedback, meeting, position } from "../db/schema/app.ts";
 import { containsPattern } from "../lib/like.ts";
 
 export type MeetingStatus = (typeof meeting.$inferSelect)["status"];
@@ -9,6 +20,10 @@ type MeetingChanges = Partial<
     typeof meeting.$inferInsert,
     "positionId" | "startAt" | "endAt" | "type" | "platform" | "notes"
   >
+>;
+type FeedbackFields = Pick<
+  typeof feedback.$inferInsert,
+  "recommendation" | "comment"
 >;
 export type NewMeeting = Required<MeetingChanges> &
   ({ candidateId: string } | { candidateName: string });
@@ -26,7 +41,8 @@ export type MeetingFilters = {
 // ones are History and are never edited or deleted.
 export const OPEN_STATUSES: MeetingStatus[] = ["pending", "confirmed"];
 
-// One meeting as the API returns it, with its candidate and position.
+// One meeting as the API returns it, with its candidate, position and
+// feedback (null until a completed meeting gets one).
 function selectMeetings() {
   return db
     .select({
@@ -39,10 +55,16 @@ function selectMeetings() {
       notes: meeting.notes,
       candidate: { id: candidate.id, name: candidate.name },
       position: { id: position.id, name: position.name },
+      feedback: {
+        recommendation: feedback.recommendation,
+        comment: feedback.comment,
+        updatedAt: feedback.updatedAt,
+      },
     })
     .from(meeting)
     .innerJoin(candidate, eq(candidate.id, meeting.candidateId))
-    .innerJoin(position, eq(position.id, meeting.positionId));
+    .innerJoin(position, eq(position.id, meeting.positionId))
+    .leftJoin(feedback, eq(feedback.meetingId, meeting.id));
 }
 
 export type Meeting = Awaited<ReturnType<typeof selectMeetings>>[number];
@@ -83,6 +105,15 @@ export async function findMeeting(
 ): Promise<Meeting | undefined> {
   const [found] = await selectMeetings().where(ownedBy(ownerId, id));
   return found;
+}
+
+// Every meeting of one candidate, earliest first.
+export function listCandidateMeetings(ownerId: string, candidateId: string) {
+  return selectMeetings()
+    .where(
+      and(eq(meeting.ownerId, ownerId), eq(meeting.candidateId, candidateId)),
+    )
+    .orderBy(asc(meeting.startAt), asc(meeting.id));
 }
 
 // A new candidate, when there is one, is added in the same transaction, so a
@@ -153,4 +184,15 @@ export async function setStatus(
     .where(and(ownedBy(ownerId, id), inArray(meeting.status, from)))
     .returning({ id: meeting.id });
   return updated.length > 0;
+}
+
+// A meeting has at most one feedback, so saving again replaces it.
+export async function saveFeedback(meetingId: string, fields: FeedbackFields) {
+  await db
+    .insert(feedback)
+    .values({ meetingId, ...fields })
+    .onConflictDoUpdate({
+      target: feedback.meetingId,
+      set: { ...fields, updatedAt: sql`now()` },
+    });
 }

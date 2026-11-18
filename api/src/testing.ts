@@ -22,5 +22,9 @@ export function signedInApi() {
       request(app).get(path).set(API_SECRET_HEADER, apiSecret),
     post: (path: string) =>
       request(app).post(path).set(API_SECRET_HEADER, apiSecret),
+    patch: (path: string) =>
+      request(app).patch(path).set(API_SECRET_HEADER, apiSecret),
+    put: (path: string) =>
+      request(app).put(path).set(API_SECRET_HEADER, apiSecret),
   };
 }
