@@ -26,9 +26,9 @@ each form field.
 | `POST /meetings/:id/complete` | Confirmed → completed, only once the meeting has started                                                           |
 | `PUT /meetings/:id/feedback`  | Adds the feedback of a completed meeting (`recommendation`, `comment`), or replaces it                             |
 
-`GET /meetings` without `from` starts from now and leaves out cancelled
-meetings unless `status=cancelled` is asked for. `from` and `to` are ISO 8601
-times with an offset; `to` is exclusive.
+`GET /meetings` has no time limit unless `from` or `to` is given, and leaves
+out cancelled meetings unless `status=cancelled` is asked for. `from` and `to`
+are ISO 8601 times with an offset; `to` is exclusive.
 
 On the candidate page, `upcoming` holds pending and confirmed meetings and
 `history` completed and cancelled ones. The split is by status, not time: a

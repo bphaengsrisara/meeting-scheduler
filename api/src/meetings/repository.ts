@@ -31,7 +31,7 @@ type FeedbackFields = Pick<
 export type NewMeeting = Required<MeetingFields> &
   ({ candidateId: string } | { candidateName: string; candidateEmail: string });
 export type MeetingFilters = {
-  from: Date;
+  from?: Date;
   to?: Date;
   q?: string;
   status?: MeetingStatus;
@@ -88,7 +88,7 @@ export async function listMeetings(ownerId: string, filters: MeetingFilters) {
   const { from, to, q, status, positionId } = filters;
   const where = and(
     eq(meeting.ownerId, ownerId),
-    gte(meeting.startAt, from),
+    from ? gte(meeting.startAt, from) : undefined,
     to ? lt(meeting.startAt, to) : undefined,
     // Cancelled meetings show only when asked for.
     status ? eq(meeting.status, status) : ne(meeting.status, "cancelled"),

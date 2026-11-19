@@ -53,14 +53,8 @@ const MOVES = {
 >;
 export type StatusMove = keyof typeof MOVES;
 
-export async function listMeetings(
-  ownerId: string,
-  query: ListMeetingsQuery,
-  now = new Date(),
-) {
-  const { page, pageSize, q, status, position, to } = query;
-  // With no start date, the dashboard shows meetings from now on.
-  const from = query.from ?? now;
+export async function listMeetings(ownerId: string, query: ListMeetingsQuery) {
+  const { page, pageSize, q, status, position, from, to } = query;
   const { meetings, total } = await repository.listMeetings(ownerId, {
     from,
     to,

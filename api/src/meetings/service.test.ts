@@ -71,21 +71,17 @@ beforeEach(() => {
 });
 
 describe("listMeetings", () => {
-  it("starts from now when no start date is given", async () => {
+  it("has no time limit when no dates are given", async () => {
     vi.mocked(repository.listMeetings).mockResolvedValue({
       meetings: [],
       total: 21,
     });
 
-    const result = await service.listMeetings(
-      owner,
-      { page: 2, pageSize: 10 },
-      now,
-    );
+    const result = await service.listMeetings(owner, { page: 2, pageSize: 10 });
 
     expect(repository.listMeetings).toHaveBeenCalledWith(
       owner,
-      expect.objectContaining({ from: now, page: 2, pageSize: 10 }),
+      expect.objectContaining({ from: undefined, page: 2, pageSize: 10 }),
     );
     expect(result).toMatchObject({ page: 2, total: 21, totalPages: 3 });
   });
