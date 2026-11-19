@@ -176,3 +176,53 @@ test("leaving the form asks first and closes on return", async ({ page }) => {
   await expect(dialog).toBeHidden();
   await expect(notes).toHaveValue("");
 });
+
+// One page serves two forms: the plain one and a candidate's. Moving between
+// them never carries a candidate, a position or a draft across.
+test("the form opens fresh for each candidate", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Continue as Guest" }).click();
+  await page.getByRole("link", { name: "Book Meeting" }).first().click();
+  await fillMeeting(page, "Jan Novak", "jan.novak@example.com", "10:00");
+  await page.getByRole("button", { name: "Book Meeting" }).click();
+  await expect(page.getByRole("heading", { name: "Jan Novak" })).toBeVisible();
+
+  // The candidate's form: locked to them, their position picked, and it
+  // books.
+  await page.getByRole("link", { name: "Book Meeting" }).first().click();
+  await expect(
+    page.getByRole("textbox", { name: "Candidate", exact: true }),
+  ).toHaveValue("Jan Novak");
+  const position = page.getByRole("combobox", { name: "Position" });
+  await expect(position).toHaveText(/QA Engineer/);
+  await page.getByLabel("Date", { exact: true }).fill(tomorrow());
+  await page.getByLabel("Date", { exact: true }).press("Tab");
+  await page.getByLabel("Start Time", { exact: true }).fill("12:00");
+  await page.getByRole("radio", { name: "Onsite" }).click();
+  await page.getByRole("button", { name: "Book Meeting" }).click();
+  await expect(page.getByText("Meeting booked")).toBeVisible();
+  await expect(page.getByText(/12:00 PM/)).toBeVisible();
+
+  // The plain form after it: empty.
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  // The candidate's page has a Book Meeting link too: wait for the dashboard.
+  await expect(
+    page.getByRole("heading", { name: "Upcoming Meetings" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Book Meeting" }).first().click();
+  await expect(
+    page.getByRole("combobox", { name: "Candidate Name" }),
+  ).toHaveValue("");
+  await expect(position).toHaveText(/Choose a position/);
+
+  // An id that is not one of the user's candidates opens the plain form.
+  await page.goto(
+    "/meetings/new?candidate=01a1ec1c-0000-7000-8000-000000000000",
+  );
+  await expect(page).toHaveURL(/\/meetings\/new$/);
+  await expect(
+    page.getByRole("combobox", { name: "Candidate Name" }),
+  ).toHaveValue("");
+  await page.goto("/meetings/new?candidate=not-an-id");
+  await expect(page).toHaveURL(/\/meetings\/new$/);
+});

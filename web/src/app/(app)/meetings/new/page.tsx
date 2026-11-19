@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import Loading from "@/app/(app)/loading";
 import { getCandidatePage } from "@/features/candidates/api";
@@ -37,7 +37,8 @@ export default function NewMeetingPage(
 }
 
 // From a candidate's page (?candidate=<id>), the form books for that
-// candidate, filled in and locked, and Back returns to their page.
+// candidate, filled in and locked, and Back returns to their page. An id
+// that is not one of the user's candidates opens the plain form instead.
 async function NewMeetingForm({
   searchParams,
 }: Readonly<{
@@ -60,7 +61,7 @@ async function NewMeetingForm({
 
   const page = await getCandidatePage(candidateId);
   if (!page) {
-    notFound();
+    redirect("/meetings/new");
   }
   const { candidate, upcoming, history } = page;
   return (

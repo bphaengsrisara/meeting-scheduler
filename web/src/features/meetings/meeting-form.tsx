@@ -64,8 +64,9 @@ export function MeetingForm(props: Readonly<MeetingFormProps>) {
   );
   return (
     <MeetingFields
-      // Starting values are read once: a newer copy of the meeting restarts it.
-      key={`${round}-${JSON.stringify(props.meeting ?? null)}`}
+      // Starting values are read once: another candidate or a newer copy of
+      // the meeting restarts the form.
+      key={`${round}-${JSON.stringify([props.candidate, props.meeting])}`}
       {...props}
       onDone={() => {
         resetWhenHidden.current = true;
